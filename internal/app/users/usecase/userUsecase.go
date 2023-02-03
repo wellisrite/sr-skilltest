@@ -3,6 +3,7 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/app/users"
+	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
 
@@ -24,7 +25,7 @@ func NewUserUsecase(repo users.UserRepository, mapper users.UserMapper) users.Us
 }
 
 // GetByID retrieves a user by its ID
-func (u *UserUsecase) Detail(c echo.Context, id uint64) error {
+func (u *UserUsecase) Detail(traceID string, c echo.Context, id uint64) error {
 	user, err := u.repo.GetByID(id)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -32,10 +33,11 @@ func (u *UserUsecase) Detail(c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, user)
 }
 
-func (u *UserUsecase) ListUsers(c echo.Context) error {
+func (u *UserUsecase) ListUsers(traceID string, c echo.Context) error {
 	page := c.QueryParam("page")
 	if page == "" {
 		page = "1"
@@ -63,11 +65,13 @@ func (u *UserUsecase) ListUsers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve users"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
+
 	return c.JSON(http.StatusOK, u.mapper.ToResponseListPagination(&users, p, l, int(totalCount)))
 }
 
 // Create creates a new user
-func (u *UserUsecase) Create(c echo.Context) error {
+func (u *UserUsecase) Create(traceID string, c echo.Context) error {
 	request := &dto.RequestCreateUser{}
 	if err := c.Bind(request); err != nil {
 		return err
@@ -79,11 +83,13 @@ func (u *UserUsecase) Create(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create user"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
+
 	return c.JSON(http.StatusCreated, dto.ResponseWithMessage{Status: true, Message: "User has been created"})
 }
 
 // Update updates an existing user
-func (u *UserUsecase) Update(c echo.Context, id uint64) error {
+func (u *UserUsecase) Update(traceID string, c echo.Context, id uint64) error {
 	request := &dto.RequestUpdateUser{}
 	if err := c.Bind(request); err != nil {
 		return err
@@ -95,15 +101,18 @@ func (u *UserUsecase) Update(c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update user"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
+
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "User has been updated"})
 }
 
 // Delete deletes a user
-func (u *UserUsecase) Delete(c echo.Context, id uint64) error {
+func (u *UserUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "User has been deleted"})
 }

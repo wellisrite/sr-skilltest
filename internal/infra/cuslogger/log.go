@@ -1,4 +1,4 @@
-package log
+package cuslogger
 
 import (
 	"fmt"
@@ -15,6 +15,12 @@ func Event(traceId string, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.WithField("trace_id", traceId).Info(msgText)
+
+	f, _ := os.OpenFile("postrequest.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	defer f.Close()
+
+	text = append(text, traceId)
+	_, _ = f.WriteString(traceId + text[0])
 }
 
 // Message is public function to create logging

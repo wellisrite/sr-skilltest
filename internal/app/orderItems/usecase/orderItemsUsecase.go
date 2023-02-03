@@ -3,6 +3,7 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/app/orderItems"
+	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
 
@@ -24,7 +25,7 @@ func NewOrderItemsUsecase(repo orderItems.OrderItemsRepository, mapper orderItem
 }
 
 // GetByID retrieves a orderItems by its ID
-func (u *OrderItemsUsecase) Detail(c echo.Context, id uint64) error {
+func (u *OrderItemsUsecase) Detail(traceID string, c echo.Context, id uint64) error {
 	orderItems, err := u.repo.GetByID(id)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -32,10 +33,11 @@ func (u *OrderItemsUsecase) Detail(c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, orderItems)
 }
 
-func (u *OrderItemsUsecase) List(c echo.Context) error {
+func (u *OrderItemsUsecase) List(traceID string, c echo.Context) error {
 	page := c.QueryParam("page")
 	if page == "" {
 		page = "1"
@@ -63,11 +65,12 @@ func (u *OrderItemsUsecase) List(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve orderItems"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, u.mapper.ToResponseListPagination(&orderItems, p, l, int(totalCount)))
 }
 
 // Create creates a new orderItems
-func (u *OrderItemsUsecase) Create(c echo.Context) error {
+func (u *OrderItemsUsecase) Create(traceID string, c echo.Context) error {
 	request := &dto.RequestCreateOrderItems{}
 	if err := c.Bind(request); err != nil {
 		return err
@@ -79,11 +82,12 @@ func (u *OrderItemsUsecase) Create(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderItems"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusCreated, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been created"})
 }
 
 // Update updates an existing orderItems
-func (u *OrderItemsUsecase) Update(c echo.Context, id uint64) error {
+func (u *OrderItemsUsecase) Update(traceID string, c echo.Context, id uint64) error {
 	request := &dto.RequestUpdateOrderItems{}
 	if err := c.Bind(request); err != nil {
 		return err
@@ -95,15 +99,17 @@ func (u *OrderItemsUsecase) Update(c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update orderItems"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been updated"})
 }
 
 // Delete deletes a orderItems
-func (u *OrderItemsUsecase) Delete(c echo.Context, id uint64) error {
+func (u *OrderItemsUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete orderItems"})
 	}
 
+	cuslogger.Event(traceID, "Done processing")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been deleted"})
 }

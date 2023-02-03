@@ -1,7 +1,7 @@
 package main
 
 import (
-	"sr-skilltest/internal/infra/log"
+	"sr-skilltest/internal/infra/cuslogger"
 
 	_userHandler "sr-skilltest/internal/app/users/handler"
 	_userMapper "sr-skilltest/internal/app/users/mapper"
@@ -25,7 +25,7 @@ func RunApplication() {
 	// Initialize dependencies, such as database and redis connections
 	properties := getProperties()
 
-	log.SetupLogging(properties.App.Mode)
+	cuslogger.SetupLogging(properties.App.Mode)
 
 	e := echo.New()
 	database := databaseConnect(properties)

@@ -3,6 +3,9 @@ package handler
 import (
 	"fmt"
 	"sr-skilltest/internal/app/orderItems"
+	middleware "sr-skilltest/internal/middlewares"
+	"sr-skilltest/internal/model/constant"
+	"sr-skilltest/internal/utilities"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -17,6 +20,7 @@ func NewOrderItemsHandler(c *echo.Echo, orderItemsUsecase orderItems.OrderItemsU
 	handler := &orderItemsHandler{orderItemsUsecase: orderItemsUsecase}
 	orderItemsRoutes := c.Group("/order-items")
 
+	orderItemsRoutes.Use(middleware.LoggerMiddleware)
 	orderItemsRoutes.GET("", handler.List)
 	orderItemsRoutes.GET("/:id", handler.Detail)
 	orderItemsRoutes.DELETE("/:id", handler.Delete)
@@ -26,7 +30,12 @@ func NewOrderItemsHandler(c *echo.Echo, orderItemsUsecase orderItems.OrderItemsU
 
 // List returns a list of all orderItemss
 func (h *orderItemsHandler) List(c echo.Context) error {
-	return h.orderItemsUsecase.List(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderItemsUsecase.List(traceId, c)
 }
 
 // Detail returns the details of a specific OrderItems
@@ -36,7 +45,12 @@ func (h *orderItemsHandler) Detail(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderItemsUsecase.Detail(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderItemsUsecase.Detail(traceId, c, id)
 }
 
 // Update updates the details of a specific OrderItems
@@ -46,7 +60,12 @@ func (h *orderItemsHandler) Update(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderItemsUsecase.Update(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderItemsUsecase.Update(traceId, c, id)
 }
 
 // Delete soft-deletes a specific OrderItems
@@ -56,10 +75,20 @@ func (h *orderItemsHandler) Delete(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderItemsUsecase.Delete(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderItemsUsecase.Delete(traceId, c, id)
 }
 
 // Create creates a new OrderItems
 func (h *orderItemsHandler) Create(c echo.Context) error {
-	return h.orderItemsUsecase.Create(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderItemsUsecase.Create(traceId, c)
 }

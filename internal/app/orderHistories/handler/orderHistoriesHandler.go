@@ -3,6 +3,9 @@ package handler
 import (
 	"fmt"
 	"sr-skilltest/internal/app/orderHistories"
+	middleware "sr-skilltest/internal/middlewares"
+	"sr-skilltest/internal/model/constant"
+	"sr-skilltest/internal/utilities"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -17,6 +20,7 @@ func NewOrderHistoriesHandler(c *echo.Echo, orderHistoriesUsecase orderHistories
 	handler := &orderHistoriesHandler{orderHistoriesUsecase: orderHistoriesUsecase}
 	orderHistoriesRoutes := c.Group("/order-histories")
 
+	orderHistoriesRoutes.Use(middleware.LoggerMiddleware)
 	orderHistoriesRoutes.GET("", handler.List)
 	orderHistoriesRoutes.GET("/:id", handler.Detail)
 	orderHistoriesRoutes.DELETE("/:id", handler.Delete)
@@ -26,7 +30,12 @@ func NewOrderHistoriesHandler(c *echo.Echo, orderHistoriesUsecase orderHistories
 
 // List returns a list of all orderHistoriess
 func (h *orderHistoriesHandler) List(c echo.Context) error {
-	return h.orderHistoriesUsecase.List(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderHistoriesUsecase.List(traceId, c)
 }
 
 // Detail returns the details of a specific OrderHistories
@@ -36,7 +45,12 @@ func (h *orderHistoriesHandler) Detail(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderHistoriesUsecase.Detail(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderHistoriesUsecase.Detail(traceId, c, id)
 }
 
 // Update updates the details of a specific OrderHistories
@@ -46,7 +60,11 @@ func (h *orderHistoriesHandler) Update(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderHistoriesUsecase.Update(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+	return h.orderHistoriesUsecase.Update(traceId, c, id)
 }
 
 // Delete soft-deletes a specific OrderHistories
@@ -56,10 +74,20 @@ func (h *orderHistoriesHandler) Delete(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.orderHistoriesUsecase.Delete(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderHistoriesUsecase.Delete(traceId, c, id)
 }
 
 // Create creates a new OrderHistories
 func (h *orderHistoriesHandler) Create(c echo.Context) error {
-	return h.orderHistoriesUsecase.Create(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.orderHistoriesUsecase.Create(traceId, c)
 }

@@ -3,6 +3,9 @@ package handler
 import (
 	"fmt"
 	"sr-skilltest/internal/app/users"
+	middleware "sr-skilltest/internal/middlewares"
+	"sr-skilltest/internal/model/constant"
+	"sr-skilltest/internal/utilities"
 	"strconv"
 
 	"github.com/labstack/echo"
@@ -17,6 +20,8 @@ func NewUserHandler(c *echo.Echo, userUsecase users.UserUsecase) {
 	handler := &UserHandler{userUsecase: userUsecase}
 	userRoutes := c.Group("/users")
 
+	userRoutes.Use(middleware.LoggerMiddleware)
+
 	userRoutes.GET("", handler.List)
 	userRoutes.GET("/:id", handler.Detail)
 	userRoutes.DELETE("/:id", handler.Delete)
@@ -26,7 +31,12 @@ func NewUserHandler(c *echo.Echo, userUsecase users.UserUsecase) {
 
 // List returns a list of all users
 func (h *UserHandler) List(c echo.Context) error {
-	return h.userUsecase.ListUsers(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.userUsecase.ListUsers(traceId, c)
 }
 
 // Detail returns the details of a specific user
@@ -36,7 +46,12 @@ func (h *UserHandler) Detail(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.userUsecase.Detail(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.userUsecase.Detail(traceId, c, id)
 }
 
 // Update updates the details of a specific user
@@ -46,7 +61,12 @@ func (h *UserHandler) Update(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.userUsecase.Update(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.userUsecase.Update(traceId, c, id)
 }
 
 // Delete soft-deletes a specific user
@@ -56,10 +76,20 @@ func (h *UserHandler) Delete(c echo.Context) error {
 		return fmt.Errorf("Not supported param")
 	}
 
-	return h.userUsecase.Delete(c, id)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.userUsecase.Delete(traceId, c, id)
 }
 
 // Create creates a new user
 func (h *UserHandler) Create(c echo.Context) error {
-	return h.userUsecase.Create(c)
+	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+	if traceId == "" {
+		traceId = utilities.CreateTraceID()
+	}
+
+	return h.userUsecase.Create(traceId, c)
 }
