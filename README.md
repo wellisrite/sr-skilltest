@@ -80,6 +80,11 @@ CREATE TABLE order_histories (
 go run . -local
 ```
 
+Docker 
+```sh
+docker-compose up
+```
+
 The server will be available at `http://localhost:8080`
 
 ## Contributing
