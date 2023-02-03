@@ -12,17 +12,20 @@ This repository contains the source code for an Item Order System application.
 
 1. Clone the repository
 
+```bash
 git clone https://github.com/wellisrite/sr-skilltest.git
-
+```
 
 2. Install the dependencies
 
+```bash
 go mod tidy
 go mod vendor
-
+```
 
 3. Set up the environment variables in a `.env` file in the root directory of the project
 
+```.env
 APP_PORT=
 SQL_HOST=
 SQL_PORT=
@@ -33,10 +36,11 @@ SQL_PASSWORD=
 REDIS_HOST=
 REDIS_PORT=
 REDIS_PASSWORD=
-
+```
 
 4. Run the migration
 
+```sql
 CREATE TABLE order_items (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
@@ -67,13 +71,14 @@ CREATE TABLE order_histories (
   FOREIGN KEY (user_id) REFERENCES users (id),
   FOREIGN KEY (order_item_id) REFERENCES order_items (id)
 );
-
+```
 
 
 5. Start the server
 
+```bash
 go run . -local
-
+```
 
 The server will be available at `http://localhost:8080`
 
