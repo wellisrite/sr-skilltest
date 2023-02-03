@@ -10,28 +10,28 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//Event is public function to create logging
+// Event is public function to create logging
 func Event(traceId string, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	logrus.SetLevel(logrus.InfoLevel)
 	logrus.WithField("trace_id", traceId).Info(msgText)
 }
 
-//Message is public function to create logging
+// Message is public function to create logging
 func Message(traceId string, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	logrus.SetLevel(logrus.TraceLevel)
 	logrus.WithField("trace_id", traceId).Trace(msgText)
 }
 
-//Warning is public function to create logging
+// Warning is public function to create logging
 func Warning(traceId string, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	logrus.SetLevel(logrus.WarnLevel)
 	logrus.WithField("trace_id", traceId).Warn(msgText)
 }
 
-//Error is public function to create logging
+// Error is public function to create logging
 func Error(traceId string, err error, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	errText := errors.Wrap(err, err.Error())
@@ -41,7 +41,7 @@ func Error(traceId string, err error, text ...string) {
 	logrus.WithField("trace_id", traceId).WithError(err).Error(msgText + stackTrace)
 }
 
-//Fatal is public function to create logging
+// Fatal is public function to create logging
 func Fatal(traceId string, err error, text ...string) {
 	msgText := "[" + strings.Join(text, "][") + "]"
 	errText := errors.Wrap(err, err.Error())

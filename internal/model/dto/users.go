@@ -1,10 +1,12 @@
 package dto
 
+import "time"
+
 type RequestCreateUser struct {
 	Name string `json:"name"`
 }
 
 type RequestUpdateUser struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	FirstOrder time.Time `json:"first_order"`
+	Name       string    `json:"name"`
 }

@@ -29,7 +29,7 @@ func (m *UserMapper) ToCreateUser(payload *dto.RequestCreateUser) (user *databas
 
 func (m *UserMapper) ToUpdateUser(payload *dto.RequestUpdateUser) (user *database.User) {
 	return &database.User{
-		ID:       payload.ID,
-		FullName: payload.Name,
+		FullName:   payload.Name,
+		FirstOrder: payload.FirstOrder,
 	}
 }

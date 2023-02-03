@@ -11,5 +11,4 @@ type OrderItems struct {
 	Name      string    `json:"name"`
 	Price     float64   `json:"price"`
 	ExpiredAt time.Time `json:"expired_at"`
-	DeletedAt time.Time `json:"deleted_at,omitempty"`
 }

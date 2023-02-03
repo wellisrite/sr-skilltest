@@ -83,14 +83,14 @@ func (u *UserUsecase) Create(c echo.Context) error {
 }
 
 // Update updates an existing user
-func (u *UserUsecase) Update(c echo.Context) error {
+func (u *UserUsecase) Update(c echo.Context, id uint64) error {
 	request := &dto.RequestUpdateUser{}
 	if err := c.Bind(request); err != nil {
 		return err
 	}
 
 	user := u.mapper.ToUpdateUser(request)
-	err := u.repo.Update(user)
+	err := u.repo.Update(user, id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update user"})
 	}
@@ -99,7 +99,7 @@ func (u *UserUsecase) Update(c echo.Context) error {
 }
 
 // Delete deletes a user
-func (u *UserUsecase) Delete(c echo.Context, id uint) error {
+func (u *UserUsecase) Delete(c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})

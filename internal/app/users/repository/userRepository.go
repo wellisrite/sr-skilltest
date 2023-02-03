@@ -50,15 +50,15 @@ func (r *UserRepository) Create(user *database.User) error {
 	return nil
 }
 
-func (r *UserRepository) Update(user *database.User) error {
-	result := r.DB.Save(user)
+func (r *UserRepository) Update(user *database.User, id uint64) error {
+	result := r.DB.Where("id = ?", id).Updates(user)
 	if result.Error != nil {
 		return result.Error
 	}
 	return nil
 }
 
-func (r *UserRepository) Delete(id uint) error {
+func (r *UserRepository) Delete(id uint64) error {
 	result := r.DB.Where("id = ?", id).Delete(&database.User{})
 	if result.Error != nil {
 		return result.Error
