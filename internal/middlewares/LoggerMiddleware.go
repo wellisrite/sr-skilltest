@@ -16,7 +16,7 @@ func LoggerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		req := c.Request()
 		res := c.Response()
 		start := time.Now()
-		traceID := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
+		traceID := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID)
 		err := next(c)
 		if err != nil {
 			c.Error(err)
