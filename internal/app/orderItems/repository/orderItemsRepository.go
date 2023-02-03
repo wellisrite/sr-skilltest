@@ -57,7 +57,7 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 	if err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set("users", cached, 600000).Err(); err != nil {
+	if err := r.Cache.Set("users", cached, 0).Err(); err != nil {
 		return nil, totalCount, err
 	}
 

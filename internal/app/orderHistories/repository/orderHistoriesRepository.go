@@ -56,7 +56,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	if err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set("orderHistories", cached, 600000).Err(); err != nil {
+	if err := r.Cache.Set("orderHistories", cached, 0).Err(); err != nil {
 		return nil, totalCount, err
 	}
 
