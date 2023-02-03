@@ -5,6 +5,7 @@ type (
 		App      App      `json:"app"`
 		Database Database `json:"database"`
 		Service  Service  `json:"service"`
+		Cache    Cache    `json:"cache"`
 	}
 
 	App struct {
@@ -22,6 +23,13 @@ type (
 		DBUser     string `json:"db_user"`
 		DBPassword string `json:"db_password"`
 		DBPort     string `json:"db_port"`
+	}
+
+	Cache struct {
+		CacheHost     string `json:"cache_host"`
+		CachePassword string `json:"cache_password"`
+		CacheDB       int    `json:"cache_db"`
+		CachePort     string `json:"cache_port"`
 	}
 
 	Service struct {

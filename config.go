@@ -8,7 +8,9 @@ import (
 
 	"sr-skilltest/internal/model"
 
+	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -51,6 +53,11 @@ func loadEnv() model.Properties {
 			DBUser:     os.Getenv("SQL_USER"),
 			DBPassword: os.Getenv("SQL_PASSWORD"),
 		},
+		Cache: model.Cache{
+			CacheHost:     os.Getenv("REDIS_HOST"),
+			CachePassword: os.Getenv("REDIS_PASSWORD"),
+			CachePort:     os.Getenv("REDIS_PORT"),
+		},
 	}
 
 	timefinish := time.Now()
@@ -60,7 +67,6 @@ func loadEnv() model.Properties {
 
 func databaseConnect(properties model.Properties) *gorm.DB {
 	params := properties.Database
-
 	dsn := "host=" + params.DBHost + " port=" + params.DBPort + " user=" + params.DBUser + " dbname=" + params.DBName + " password=" + params.DBPassword + " sslmode=disable"
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
@@ -72,4 +78,14 @@ func databaseConnect(properties model.Properties) *gorm.DB {
 	}
 
 	return db
+}
+
+func ConnectCache(properties model.Properties) *redis.Client {
+	client := redis.NewClient(&redis.Options{
+		Addr:     properties.Cache.CacheHost + ":" + properties.Cache.CachePort,
+		Password: properties.Cache.CachePassword,
+		DB:       0, // use default DB
+	})
+
+	return client
 }

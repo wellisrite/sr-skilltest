@@ -28,7 +28,7 @@ func NewOrderHistoriesHandler(c *echo.Echo, orderHistoriesUsecase orderHistories
 	orderHistoriesRoutes.PUT("/:id", handler.Update)
 }
 
-// List returns a list of all orderHistoriess
+// List returns a list of all orderHistories
 func (h *orderHistoriesHandler) List(c echo.Context) error {
 	traceId, _ := c.Get(constant.CONTEXT_LOCALS_KEY_TRACE_ID).(string)
 	if traceId == "" {

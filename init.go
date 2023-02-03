@@ -24,26 +24,25 @@ import (
 func RunApplication() {
 	// Initialize dependencies, such as database and redis connections
 	properties := getProperties()
-
 	cuslogger.SetupLogging(properties.App.Mode)
 
 	e := echo.New()
 	database := databaseConnect(properties)
 
-	// redis := repository.NewRedis()
-	// defer redis.Close()
+	redis := ConnectCache(properties)
+	defer redis.Close()
 
-	userRepository := _userRepository.NewUserRepository(database)
+	userRepository := _userRepository.NewUserRepository(database, redis)
 	userMapper := _userMapper.NewUserMapper()
 	userUsecase := _userUsecase.NewUserUsecase(userRepository, userMapper)
 	_userHandler.NewUserHandler(e, userUsecase)
 
-	orderItemsRepository := _orderItemsRepository.NewOrderItemsRepository(database)
+	orderItemsRepository := _orderItemsRepository.NewOrderItemsRepository(database, redis)
 	orderItemsMapper := _orderItemsMapper.NewOrderItemsMapper()
 	orderItemsUsecase := _orderItemsUsecase.NewOrderItemsUsecase(orderItemsRepository, orderItemsMapper)
 	_orderItemsHandler.NewOrderItemsHandler(e, orderItemsUsecase)
 
-	orderHistoriesRepository := _orderHistoriesRepository.NewOrderHistoriesRepository(database)
+	orderHistoriesRepository := _orderHistoriesRepository.NewOrderHistoriesRepository(database, redis)
 	orderHistoriesMapper := _orderHistoriesMapper.NewOrderHistoriesMapper()
 	orderHistoriesUsecase := _orderHistoriesUsecase.NewOrderHistoriesUsecase(orderHistoriesRepository, userRepository, orderHistoriesMapper)
 	_orderHistoriesHandler.NewOrderHistoriesHandler(e, orderHistoriesUsecase)

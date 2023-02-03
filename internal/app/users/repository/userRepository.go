@@ -1,19 +1,23 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
 	"sr-skilltest/internal/app/users"
 	"sr-skilltest/internal/model/database"
+
+	"github.com/go-redis/redis"
 
 	"gorm.io/gorm"
 )
 
 type UserRepository struct {
-	DB *gorm.DB
+	DB    *gorm.DB
+	Cache *redis.Client
 }
 
-func NewUserRepository(db *gorm.DB) users.UserRepository {
-	return &UserRepository{DB: db}
+func NewUserRepository(db *gorm.DB, cache *redis.Client) users.UserRepository {
+	return &UserRepository{DB: db, Cache: cache}
 }
 
 func (r *UserRepository) GetByID(id uint64) (*database.User, error) {
@@ -30,14 +34,32 @@ func (r *UserRepository) GetByID(id uint64) (*database.User, error) {
 }
 
 func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, error) {
+	// Try to get data from cache
+	var totalCount int64
 	var users []database.User
+	cachedUsers, err := r.Cache.Get("users").Result()
+	if err == nil {
+		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
+			return nil, totalCount, err
+		}
+		return users, totalCount, nil
+	}
+
 	result := r.DB.Limit(limit).Offset(offset).Find(&users)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
 
-	var totalCount int64
 	r.DB.Model(&database.User{}).Count(&totalCount)
+
+	// Save data to cache
+	cached, err := json.Marshal(users)
+	if err != nil {
+		return nil, totalCount, err
+	}
+	if err := r.Cache.Set("users", cached, 600000).Err(); err != nil {
+		return nil, totalCount, err
+	}
 
 	return users, totalCount, nil
 }
@@ -47,6 +69,12 @@ func (r *UserRepository) Create(user *database.User) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	// Clear cache
+	if err := r.Cache.Del("users").Err(); err != nil {
+		return err
+	}
+
 	return nil
 }
 

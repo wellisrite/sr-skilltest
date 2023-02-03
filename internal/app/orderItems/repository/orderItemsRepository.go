@@ -1,19 +1,22 @@
 package repository
 
 import (
+	"encoding/json"
 	"errors"
 	"sr-skilltest/internal/app/orderItems"
 	"sr-skilltest/internal/model/database"
 
+	"github.com/go-redis/redis"
 	"gorm.io/gorm"
 )
 
 type OrderItemsRepository struct {
-	DB *gorm.DB
+	DB    *gorm.DB
+	Cache *redis.Client
 }
 
-func NewOrderItemsRepository(db *gorm.DB) orderItems.OrderItemsRepository {
-	return &OrderItemsRepository{DB: db}
+func NewOrderItemsRepository(db *gorm.DB, cache *redis.Client) orderItems.OrderItemsRepository {
+	return &OrderItemsRepository{DB: db, Cache: cache}
 }
 
 func (r *OrderItemsRepository) GetByID(id uint64) (*database.OrderItems, error) {
@@ -30,16 +33,35 @@ func (r *OrderItemsRepository) GetByID(id uint64) (*database.OrderItems, error) 
 }
 
 func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderItems, int64, error) {
-	var orderItemss []database.OrderItems
-	result := r.DB.Limit(limit).Offset(offset).Find(&orderItemss)
+	var orderItems []database.OrderItems
+	var totalCount int64
+
+	// Try to get data from cache
+	cachedOrderItems, err := r.Cache.Get("orderItems").Result()
+	if err == nil {
+		if err := json.Unmarshal([]byte(cachedOrderItems), &orderItems); err != nil {
+			return nil, totalCount, err
+		}
+		return orderItems, totalCount, err
+	}
+
+	result := r.DB.Limit(limit).Offset(offset).Find(&orderItems)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
 
-	var totalCount int64
 	r.DB.Model(&database.OrderItems{}).Count(&totalCount)
 
-	return orderItemss, totalCount, nil
+	// Save data to cache
+	cached, err := json.Marshal(orderItems)
+	if err != nil {
+		return nil, totalCount, err
+	}
+	if err := r.Cache.Set("users", cached, 600000).Err(); err != nil {
+		return nil, totalCount, err
+	}
+
+	return orderItems, totalCount, nil
 }
 
 func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
@@ -47,6 +69,12 @@ func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	// Clear cache
+	if err := r.Cache.Del("orderItems").Err(); err != nil {
+		return err
+	}
+
 	return nil
 }
 

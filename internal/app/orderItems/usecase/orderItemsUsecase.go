@@ -6,6 +6,7 @@ import (
 	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -33,7 +34,7 @@ func (u *OrderItemsUsecase) Detail(traceID string, c echo.Context, id uint64) er
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, orderItems)
 }
 
@@ -65,7 +66,7 @@ func (u *OrderItemsUsecase) List(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve orderItems"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, u.mapper.ToResponseListPagination(&orderItems, p, l, int(totalCount)))
 }
 
@@ -82,7 +83,7 @@ func (u *OrderItemsUsecase) Create(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderItems"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusCreated, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been created"})
 }
 
@@ -99,7 +100,7 @@ func (u *OrderItemsUsecase) Update(traceID string, c echo.Context, id uint64) er
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update orderItems"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been updated"})
 }
 
@@ -110,6 +111,6 @@ func (u *OrderItemsUsecase) Delete(traceID string, c echo.Context, id uint64) er
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete orderItems"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderItems has been deleted"})
 }

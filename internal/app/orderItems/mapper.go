@@ -6,7 +6,7 @@ import (
 )
 
 type OrderItemsMapper interface {
-	ToResponseListPagination(OrderItemss *[]database.OrderItems, page int, pageLimit int, totalCount int) *dto.ResponsePagination
+	ToResponseListPagination(orderItems *[]database.OrderItems, page int, pageLimit int, totalCount int) *dto.ResponsePagination
 	ToCreateOrderItems(payload *dto.RequestCreateOrderItems) (OrderItems *database.OrderItems)
 	ToUpdateOrderItems(payload *dto.RequestUpdateOrderItems) (OrderItems *database.OrderItems)
 }

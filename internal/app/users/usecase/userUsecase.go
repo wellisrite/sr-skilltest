@@ -6,6 +6,7 @@ import (
 	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -26,6 +27,16 @@ func NewUserUsecase(repo users.UserRepository, mapper users.UserMapper) users.Us
 
 // GetByID retrieves a user by its ID
 func (u *UserUsecase) Detail(traceID string, c echo.Context, id uint64) error {
+	// redisClient := c.Get("redis").(*redis.Client)
+
+	// cacheKey := "user:" + string(id)
+	// userJSON, err := redisClient.Get(cacheKey).Result()
+	// if err == nil {
+	// 	// User found in cache, return it
+	// 	fmt.Println("found")
+	// 	return c.JSONBlob(200, []byte(userJSON))
+	// }
+
 	user, err := u.repo.GetByID(id)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
@@ -33,7 +44,7 @@ func (u *UserUsecase) Detail(traceID string, c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, user)
 }
 
@@ -65,7 +76,7 @@ func (u *UserUsecase) ListUsers(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve users"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 
 	return c.JSON(http.StatusOK, u.mapper.ToResponseListPagination(&users, p, l, int(totalCount)))
 }
@@ -83,7 +94,7 @@ func (u *UserUsecase) Create(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create user"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 
 	return c.JSON(http.StatusCreated, dto.ResponseWithMessage{Status: true, Message: "User has been created"})
 }
@@ -101,7 +112,7 @@ func (u *UserUsecase) Update(traceID string, c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update user"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "User has been updated"})
 }
@@ -113,6 +124,6 @@ func (u *UserUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "User has been deleted"})
 }

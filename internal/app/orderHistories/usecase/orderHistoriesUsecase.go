@@ -7,6 +7,7 @@ import (
 	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	"gorm.io/gorm"
@@ -68,7 +69,7 @@ func (u *OrderHistoriesUsecase) List(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve orderHistories"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, u.mapper.ToResponseListPagination(&orderHistories, p, l, int(totalCount)))
 }
 
@@ -92,7 +93,7 @@ func (u *OrderHistoriesUsecase) Create(traceID string, c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderHistories"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusCreated, dto.ResponseWithMessage{Status: true, Message: "OrderHistories has been created"})
 }
 
@@ -109,7 +110,7 @@ func (u *OrderHistoriesUsecase) Update(traceID string, c echo.Context, id uint64
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update orderHistories"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderHistories has been updated"})
 }
 
@@ -120,6 +121,6 @@ func (u *OrderHistoriesUsecase) Delete(traceID string, c echo.Context, id uint64
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete orderHistories"})
 	}
 
-	cuslogger.Event(traceID, "Done processing")
+	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
 	return c.JSON(http.StatusOK, dto.ResponseWithMessage{Status: true, Message: "OrderHistories has been deleted"})
 }
