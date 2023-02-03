@@ -31,6 +31,8 @@ func (u *OrderItemsUsecase) Detail(traceID string, c echo.Context, id uint64) er
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -63,6 +65,8 @@ func (u *OrderItemsUsecase) List(traceID string, c echo.Context) error {
 
 	orderItems, totalCount, err := u.repo.GetAll(offset, l)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve orderItems"})
 	}
 
@@ -80,6 +84,8 @@ func (u *OrderItemsUsecase) Create(traceID string, c echo.Context) error {
 	orderItems := u.mapper.ToCreateOrderItems(request)
 	err := u.repo.Create(orderItems)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderItems"})
 	}
 
@@ -97,6 +103,8 @@ func (u *OrderItemsUsecase) Update(traceID string, c echo.Context, id uint64) er
 	orderItems := u.mapper.ToUpdateOrderItems(request)
 	err := u.repo.Update(orderItems, id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update orderItems"})
 	}
 
@@ -108,6 +116,8 @@ func (u *OrderItemsUsecase) Update(traceID string, c echo.Context, id uint64) er
 func (u *OrderItemsUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete orderItems"})
 	}
 

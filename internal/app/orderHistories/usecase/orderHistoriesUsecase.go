@@ -34,6 +34,8 @@ func (u *OrderHistoriesUsecase) Detail(traceID string, c echo.Context, id uint64
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -66,6 +68,8 @@ func (u *OrderHistoriesUsecase) List(traceID string, c echo.Context) error {
 
 	orderHistories, totalCount, err := u.repo.GetAll(offset, l)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve orderHistories"})
 	}
 
@@ -81,15 +85,16 @@ func (u *OrderHistoriesUsecase) Create(traceID string, c echo.Context) error {
 	}
 
 	user, err := u.userRepo.GetByID(uint64(request.UserID))
-
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to get user"})
 	}
 
 	orderHistories := u.mapper.ToCreateOrderHistories(request)
 	err = u.repo.Create(orderHistories, user)
 	if err != nil {
-		cuslogger.Error("create_order", err, "error in creating order")
+		cuslogger.Error("create_order", err, err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderHistories"})
 	}
 
@@ -107,6 +112,8 @@ func (u *OrderHistoriesUsecase) Update(traceID string, c echo.Context, id uint64
 	orderHistories := u.mapper.ToUpdateOrderHistories(request)
 	err := u.repo.Update(orderHistories, id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update orderHistories"})
 	}
 
@@ -118,6 +125,8 @@ func (u *OrderHistoriesUsecase) Update(traceID string, c echo.Context, id uint64
 func (u *OrderHistoriesUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete orderHistories"})
 	}
 

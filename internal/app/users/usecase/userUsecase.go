@@ -27,20 +27,11 @@ func NewUserUsecase(repo users.UserRepository, mapper users.UserMapper) users.Us
 
 // GetByID retrieves a user by its ID
 func (u *UserUsecase) Detail(traceID string, c echo.Context, id uint64) error {
-	// redisClient := c.Get("redis").(*redis.Client)
-
-	// cacheKey := "user:" + string(id)
-	// userJSON, err := redisClient.Get(cacheKey).Result()
-	// if err == nil {
-	// 	// User found in cache, return it
-	// 	fmt.Println("found")
-	// 	return c.JSONBlob(200, []byte(userJSON))
-	// }
-
 	user, err := u.repo.GetByID(id)
 	if err != nil && err == gorm.ErrRecordNotFound {
 		return echo.NewHTTPError(http.StatusNotFound, err.Error())
 	} else if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
@@ -73,6 +64,8 @@ func (u *UserUsecase) ListUsers(traceID string, c echo.Context) error {
 
 	users, totalCount, err := u.repo.GetAll(offset, l)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve users"})
 	}
 
@@ -91,6 +84,8 @@ func (u *UserUsecase) Create(traceID string, c echo.Context) error {
 	user := u.mapper.ToCreateUser(request)
 	err := u.repo.Create(user)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create user"})
 	}
 
@@ -109,6 +104,8 @@ func (u *UserUsecase) Update(traceID string, c echo.Context, id uint64) error {
 	user := u.mapper.ToUpdateUser(request)
 	err := u.repo.Update(user, id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to update user"})
 	}
 
@@ -121,6 +118,8 @@ func (u *UserUsecase) Update(traceID string, c echo.Context, id uint64) error {
 func (u *UserUsecase) Delete(traceID string, c echo.Context, id uint64) error {
 	err := u.repo.Delete(id)
 	if err != nil {
+		cuslogger.Error(traceID, err, err.Error())
+
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to delete user"})
 	}
 
