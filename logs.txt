@@ -1,3 +1,0 @@
-[::1]:61089 - GET /users?page=1&limit=2  200 381.2085ms
-[::1]:53240 - GET /users?page=1&limit=2  {} 200 368.4718ms
-[::1]:53240 - POST /order-histories  &{%!s(*io.LimitedReader=&{0xc000090120 0}) <nil> %!s(*bufio.Reader=<nil>) %!s(bool=false) %!s(bool=true) {%!s(int32=0) %!s(uint32=0)} %!s(bool=true) %!s(bool=false) %!s(bool=false) %!s(func()=0xb22440)} 201 511.5044ms
