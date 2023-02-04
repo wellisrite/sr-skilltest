@@ -26,15 +26,15 @@ go mod vendor
 3. Set up the environment variables in a `.env` file in the root directory of the project
 
 ```
-APP_PORT=
-SQL_HOST= host.docker.internal // for local installation
-SQL_PORT=
+APP_PORT=8080
+SQL_HOST=host.docker.internal
+SQL_PORT=5432
 SQL_DATABASE=
 SQL_USER=
-SQL_PASSWORD=
+SQL_PASSWORD=M
 
-REDIS_HOST=
-REDIS_PORT=
+REDIS_HOST=redis // local
+REDIS_PORT=6379
 REDIS_PASSWORD=
 ```
 
