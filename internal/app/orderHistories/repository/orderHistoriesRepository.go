@@ -56,9 +56,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	if err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set("orderHistories", cached, 0).Err(); err != nil {
-		return nil, totalCount, err
-	}
+	r.Cache.Set("orderHistories", cached, 0)
 
 	return orderHistories, totalCount, nil
 }
@@ -88,9 +86,7 @@ func (r *OrderHistoriesRepository) Create(orderHistories *database.OrderHistorie
 	}
 
 	// Clear cache
-	if err := r.Cache.Del("orderHistories").Err(); err != nil {
-		return err
-	}
+	r.Cache.Del("orderHistories")
 
 	return tx.Commit().Error
 }

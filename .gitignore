@@ -92,3 +92,5 @@ docker-compose.yml
 dbconf.yml
 prerequest.txt
 postrequest.txt
+
+.env.backup

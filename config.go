@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"sr-skilltest/internal/model"
+	"sr-skilltest/internal/model/database"
 
 	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
@@ -76,6 +77,10 @@ func databaseConnect(properties model.Properties) *gorm.DB {
 		time.Sleep(5 * time.Second)
 		os.Exit(1)
 	}
+
+	db.AutoMigrate(&database.User{})
+	db.AutoMigrate(&database.OrderItems{})
+	db.AutoMigrate(&database.OrderHistories{})
 
 	return db
 }

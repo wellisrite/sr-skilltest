@@ -57,9 +57,8 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 	if err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set("users", cached, 600000).Err(); err != nil {
-		return nil, totalCount, err
-	}
+
+	r.Cache.Set("users", cached, 0)
 
 	return users, totalCount, nil
 }
@@ -71,9 +70,7 @@ func (r *UserRepository) Create(user *database.User) error {
 	}
 
 	// Clear cache
-	if err := r.Cache.Del("users").Err(); err != nil {
-		return err
-	}
+	r.Cache.Del("users")
 
 	return nil
 }

@@ -57,9 +57,7 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 	if err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set("users", cached, 0).Err(); err != nil {
-		return nil, totalCount, err
-	}
+	r.Cache.Set("orderItems", cached, 0)
 
 	return orderItems, totalCount, nil
 }
@@ -71,9 +69,7 @@ func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
 	}
 
 	// Clear cache
-	if err := r.Cache.Del("orderItems").Err(); err != nil {
-		return err
-	}
+	r.Cache.Del("orderItems")
 
 	return nil
 }
