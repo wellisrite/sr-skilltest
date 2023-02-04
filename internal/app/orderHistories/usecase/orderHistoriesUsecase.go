@@ -3,8 +3,8 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/app/orderHistories"
-	"sr-skilltest/internal/app/users"
 	"sr-skilltest/internal/infra/cuslogger"
+	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/dto"
 	"strconv"
 	"time"
@@ -14,17 +14,15 @@ import (
 )
 
 type OrderHistoriesUsecase struct {
-	repo     orderHistories.OrderHistoriesRepository
-	userRepo users.UserRepository
-	mapper   orderHistories.OrderHistoriesMapper
+	repo   orderHistories.OrderHistoriesRepository
+	mapper orderHistories.OrderHistoriesMapper
 }
 
 // NewOrderHistoriesUsecase creates a new instance of OrderHistoriesUsecase
-func NewOrderHistoriesUsecase(repo orderHistories.OrderHistoriesRepository, userRepo users.UserRepository, mapper orderHistories.OrderHistoriesMapper) orderHistories.OrderHistoriesUsecase {
+func NewOrderHistoriesUsecase(repo orderHistories.OrderHistoriesRepository, mapper orderHistories.OrderHistoriesMapper) orderHistories.OrderHistoriesUsecase {
 	return &OrderHistoriesUsecase{
-		repo:     repo,
-		userRepo: userRepo,
-		mapper:   mapper,
+		repo:   repo,
+		mapper: mapper,
 	}
 }
 
@@ -84,16 +82,15 @@ func (u *OrderHistoriesUsecase) Create(traceID string, c echo.Context) error {
 		return err
 	}
 
-	user, err := u.userRepo.GetByID(uint64(request.UserID))
-	if err != nil {
-		cuslogger.Error(traceID, err, err.Error())
-
-		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to get user"})
-	}
-
 	orderHistories := u.mapper.ToCreateOrderHistories(request)
-	err = u.repo.Create(orderHistories, user)
-	if err != nil {
+	err := u.repo.Create(traceID, orderHistories)
+	if err != nil && err.Error() == gorm.ErrRecordNotFound.Error() {
+		return echo.NewHTTPError(http.StatusNotFound, map[string]string{"error": "entity not found"})
+	} else if err != nil && err.Error() == constant.ERR_EXPIRED_PRODUCT {
+		cuslogger.Event(traceID, "Customer trying to buy expired product")
+
+		return echo.NewHTTPError(http.StatusNotFound, map[string]string{"error": "product is expired"})
+	} else if err != nil {
 		cuslogger.Error("create_order", err, err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderHistories"})
 	}

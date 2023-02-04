@@ -80,6 +80,9 @@ func (r *UserRepository) Update(user *database.User, id uint64) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("users")
+
 	return nil
 }
 
@@ -88,5 +91,8 @@ func (r *UserRepository) Delete(id uint64) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("users")
+
 	return nil
 }

@@ -13,8 +13,20 @@ func NewUserMapper() users.UserMapper {
 }
 
 func (m *UserMapper) ToResponseListPagination(users *[]database.User, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
+	var response []*dto.ResponseGetUser
+	for _, user := range *users {
+		response = append(response, &dto.ResponseGetUser{
+			ID:         user.ID,
+			CreatedAt:  user.CreatedAt,
+			DeletedAt:  user.DeletedAt.Time,
+			UpdatedAt:  user.UpdatedAt,
+			FirstOrder: user.FirstOrder,
+			FullName:   user.FullName,
+		})
+	}
+
 	return &dto.ResponsePagination{
-		Data:       users,
+		Data:       response,
 		TotalCount: totalCount,
 		Page:       page,
 		PageLimit:  pageLimit,

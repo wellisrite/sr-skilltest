@@ -44,7 +44,7 @@ func RunApplication() {
 
 	orderHistoriesRepository := _orderHistoriesRepository.NewOrderHistoriesRepository(database, redis)
 	orderHistoriesMapper := _orderHistoriesMapper.NewOrderHistoriesMapper()
-	orderHistoriesUsecase := _orderHistoriesUsecase.NewOrderHistoriesUsecase(orderHistoriesRepository, userRepository, orderHistoriesMapper)
+	orderHistoriesUsecase := _orderHistoriesUsecase.NewOrderHistoriesUsecase(orderHistoriesRepository, orderHistoriesMapper)
 	_orderHistoriesHandler.NewOrderHistoriesHandler(e, orderHistoriesUsecase)
 
 	// Start the server

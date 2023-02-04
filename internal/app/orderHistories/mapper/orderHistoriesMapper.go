@@ -13,8 +13,42 @@ func NewOrderHistoriesMapper() orderHistories.OrderHistoriesMapper {
 }
 
 func (m *OrderHistoriesMapper) ToResponseListPagination(orderHistories *[]database.OrderHistories, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
+	var response []*dto.ResponseGetOrderHistories
+	for _, orderHistory := range *orderHistories {
+		orderItem := orderHistory.OrderItem
+		user := orderHistory.User
+		orderItemRes := &dto.ResponseGetOrderItems{
+			ID:        orderItem.ID,
+			CreatedAt: orderItem.CreatedAt,
+			DeletedAt: orderItem.DeletedAt.Time,
+			UpdatedAt: orderItem.UpdatedAt,
+			Name:      orderItem.Name,
+			Price:     orderItem.Price,
+			ExpiredAt: orderItem.ExpiredAt,
+		}
+
+		userResponse := &dto.ResponseGetUser{
+			ID:         user.ID,
+			CreatedAt:  user.CreatedAt,
+			DeletedAt:  user.DeletedAt.Time,
+			UpdatedAt:  user.UpdatedAt,
+			FirstOrder: user.FirstOrder,
+			FullName:   user.FullName,
+		}
+
+		response = append(response, &dto.ResponseGetOrderHistories{
+			ID:           orderHistory.ID,
+			CreatedAt:    orderHistory.CreatedAt,
+			DeletedAt:    orderHistory.DeletedAt.Time,
+			UpdatedAt:    orderHistory.UpdatedAt,
+			Descriptions: orderHistory.Descriptions,
+			User:         userResponse,
+			OrderItem:    orderItemRes,
+		})
+	}
+
 	return &dto.ResponsePagination{
-		Data:       orderHistories,
+		Data:       response,
 		TotalCount: totalCount,
 		Page:       page,
 		PageLimit:  pageLimit,

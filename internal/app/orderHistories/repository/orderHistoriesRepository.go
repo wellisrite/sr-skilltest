@@ -3,7 +3,10 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sr-skilltest/internal/app/orderHistories"
+	"sr-skilltest/internal/infra/cuslogger"
+	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/database"
 	"time"
 
@@ -61,7 +64,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	return orderHistories, totalCount, nil
 }
 
-func (r *OrderHistoriesRepository) Create(orderHistories *database.OrderHistories, user *database.User) error {
+func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *database.OrderHistories) error {
 	tx := r.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -73,13 +76,31 @@ func (r *OrderHistoriesRepository) Create(orderHistories *database.OrderHistorie
 		return err
 	}
 
+	var user database.User
+	if err := tx.First(&user, orderHistories.UserID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	var orderItem database.OrderItems
+	if err := tx.First(&orderItem, orderHistories.OrderItemID).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// not allowing to buy expired product
+	if orderItem.ExpiredAt.Before(time.Now()) && !orderItem.ExpiredAt.IsZero() {
+		return fmt.Errorf(constant.ERR_EXPIRED_PRODUCT)
+	}
+
 	if err := tx.Create(orderHistories).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
 	if user.FirstOrder.IsZero() {
-		if err := tx.Model(user).Where("id = ?", user.ID).Update("first_order", time.Now()).Error; err != nil {
+		cuslogger.Event(traceID, "customer first buy")
+		if err := tx.Model(&user).Update("first_order", time.Now()).Error; err != nil {
 			tx.Rollback()
 			return err
 		}
@@ -87,6 +108,7 @@ func (r *OrderHistoriesRepository) Create(orderHistories *database.OrderHistorie
 
 	// Clear cache
 	r.Cache.Del("orderHistories")
+	r.Cache.Del("users")
 
 	return tx.Commit().Error
 }
@@ -96,6 +118,9 @@ func (r *OrderHistoriesRepository) Update(orderHistories *database.OrderHistorie
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("orderHistories")
+
 	return nil
 }
 
@@ -104,5 +129,8 @@ func (r *OrderHistoriesRepository) Delete(id uint64) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("orderHistories")
+
 	return nil
 }

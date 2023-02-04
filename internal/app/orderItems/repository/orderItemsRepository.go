@@ -79,6 +79,9 @@ func (r *OrderItemsRepository) Update(orderItems *database.OrderItems, id uint64
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("orderItems")
+
 	return nil
 }
 
@@ -87,5 +90,8 @@ func (r *OrderItemsRepository) Delete(id uint64) error {
 	if result.Error != nil {
 		return result.Error
 	}
+
+	r.Cache.Del("orderItems")
+
 	return nil
 }
