@@ -27,7 +27,7 @@ go mod vendor
 
 ```
 APP_PORT=
-SQL_HOST=
+SQL_HOST= host.docker.internal // for local installation
 SQL_PORT=
 SQL_DATABASE=
 SQL_USER=
