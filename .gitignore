@@ -90,6 +90,5 @@ docker-compose.yml
 .ebextensions/firebase.config
 
 dbconf.yml
-postrequest.txt
-
 prerequest.txt
+postrequest.txt

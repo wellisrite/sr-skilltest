@@ -1,9 +1,12 @@
 version: '3'
 services:
   web:
+      container_name: full_app
       build:
         context: .
         dockerfile: Dockerfile
+      volumes:
+      - api:/usr/src/app/
       ports:
         - "8080:8080"
       env_file:
@@ -18,7 +21,9 @@ services:
       POSTGRES_PASSWORD: ${SQL_PASSWORD}
       POSTGRES_DB: ${SQL_DATABASE}
     volumes:
-      - /c/Users/Sam/Repositories/sr-skilltest/.env:/app/.env
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - fullstack
   redis:
     image: redis:latest
     environment:
@@ -27,14 +32,13 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - redisdata:/data
-  jenkins:
-    image: jenkins/jenkins:lts
-    ports:
-      - "50000:50000"
-    volumes:
-      - jenkins_data:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - fullstack
 volumes:
+  api:
   pgdata:
   redisdata:
-  jenkins_data:
+# Networks to be created to facilitate communication between containers
+networks:
+  fullstack:
+    driver: bridge
