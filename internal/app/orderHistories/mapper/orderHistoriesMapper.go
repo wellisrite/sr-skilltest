@@ -17,23 +17,30 @@ func (m *OrderHistoriesMapper) ToResponseListPagination(orderHistories *[]databa
 	for _, orderHistory := range *orderHistories {
 		orderItem := orderHistory.OrderItem
 		user := orderHistory.User
-		orderItemRes := &dto.ResponseGetOrderItems{
-			ID:        orderItem.ID,
-			CreatedAt: orderItem.CreatedAt,
-			DeletedAt: orderItem.DeletedAt.Time,
-			UpdatedAt: orderItem.UpdatedAt,
-			Name:      orderItem.Name,
-			Price:     orderItem.Price,
-			ExpiredAt: orderItem.ExpiredAt,
+		var orderItemRes *dto.ResponseGetOrderItems
+		var userResponse *dto.ResponseGetUser
+
+		if orderItem != nil {
+			orderItemRes = &dto.ResponseGetOrderItems{
+				ID:        orderItem.ID,
+				CreatedAt: orderItem.CreatedAt,
+				DeletedAt: orderItem.DeletedAt.Time,
+				UpdatedAt: orderItem.UpdatedAt,
+				Name:      orderItem.Name,
+				Price:     orderItem.Price,
+				ExpiredAt: orderItem.ExpiredAt,
+			}
 		}
 
-		userResponse := &dto.ResponseGetUser{
-			ID:         user.ID,
-			CreatedAt:  user.CreatedAt,
-			DeletedAt:  user.DeletedAt.Time,
-			UpdatedAt:  user.UpdatedAt,
-			FirstOrder: user.FirstOrder,
-			FullName:   user.FullName,
+		if user != nil {
+			userResponse = &dto.ResponseGetUser{
+				ID:         user.ID,
+				CreatedAt:  user.CreatedAt,
+				DeletedAt:  user.DeletedAt.Time,
+				UpdatedAt:  user.UpdatedAt,
+				FirstOrder: user.FirstOrder,
+				FullName:   user.FullName,
+			}
 		}
 
 		response = append(response, &dto.ResponseGetOrderHistories{

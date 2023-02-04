@@ -67,7 +67,11 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 		return orderHistories, totalCount, nil
 	}
 
-	result := r.DB.Preload("User").Preload("OrderItem").Limit(limit).Offset(offset).Find(&orderHistories)
+	result := r.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).Preload("OrderItem", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).Limit(limit).Offset(offset).Find(&orderHistories)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
@@ -79,7 +83,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	if err != nil {
 		return nil, totalCount, err
 	}
-	r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME)
+	r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs())
 
 	return orderHistories, totalCount, nil
 }
@@ -127,9 +131,6 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *databa
 
 		r.Cache.Del(fmt.Sprintf("user:%d", orderHistories.UserID))
 	}
-
-	key := fmt.Sprintf("%s:%d", CLASS, orderHistories.ID)
-	r.Cache.Set(key, orderHistories, 0)
 
 	return tx.Commit().Error
 }

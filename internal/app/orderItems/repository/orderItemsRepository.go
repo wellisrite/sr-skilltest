@@ -90,8 +90,7 @@ func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
 		return result.Error
 	}
 
-	key := fmt.Sprintf("%s:%d", CLASS, orderItems.ID)
-	return r.Cache.Set(key, orderItems, 0).Err()
+	return nil
 }
 
 func (r *OrderItemsRepository) Update(orderItems *database.OrderItems, id uint64) error {

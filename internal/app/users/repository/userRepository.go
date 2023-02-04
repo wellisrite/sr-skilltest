@@ -94,8 +94,7 @@ func (r *UserRepository) Create(user *database.User) error {
 		return result.Error
 	}
 
-	key := fmt.Sprintf("%s:%d", CLASS, user.ID)
-	return r.Cache.Set(key, user, 0).Err()
+	return nil
 }
 
 func (r *UserRepository) Update(user *database.User, id uint64) error {
