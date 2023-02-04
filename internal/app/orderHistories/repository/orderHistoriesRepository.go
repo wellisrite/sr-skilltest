@@ -44,7 +44,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 		}
 		return orderHistories, totalCount, nil
 	}
-	result := r.DB.Limit(limit).Offset(offset).Find(&orderHistories)
+	result := r.DB.Preload("User").Preload("OrderItem").Limit(limit).Offset(offset).Find(&orderHistories)
 	if result.Error != nil {
 		return nil, 0, result.Error
 	}
