@@ -3,13 +3,17 @@ package repository
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"sr-skilltest/internal/app/users"
+	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/database"
 
 	"github.com/go-redis/redis"
 
 	"gorm.io/gorm"
 )
+
+const CLASS = "user"
 
 type UserRepository struct {
 	DB    *gorm.DB
@@ -21,13 +25,30 @@ func NewUserRepository(db *gorm.DB, cache *redis.Client) users.UserRepository {
 }
 
 func (r *UserRepository) GetByID(id uint64) (*database.User, error) {
+	// Try to get data from cache
 	var user database.User
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	val, err := r.Cache.Get(key).Bytes()
+	if err == nil {
+		if err := json.Unmarshal(val, &user); err == nil {
+			return &user, nil
+		}
+	}
+
 	result := r.DB.First(&user, id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
 		return nil, result.Error
+	}
+
+	val, err = json.Marshal(user)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.Cache.Set(key, val, 0).Err(); err != nil {
+		return nil, err
 	}
 
 	return &user, nil
@@ -37,7 +58,9 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 	// Try to get data from cache
 	var totalCount int64
 	var users []database.User
-	cachedUsers, err := r.Cache.Get("users").Result()
+
+	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
+	cachedUsers, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
 		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
 			return nil, totalCount, err
@@ -58,7 +81,9 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 		return nil, totalCount, err
 	}
 
-	r.Cache.Set("users", cached, 0)
+	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
+		return users, totalCount, err
+	}
 
 	return users, totalCount, nil
 }
@@ -69,10 +94,8 @@ func (r *UserRepository) Create(user *database.User) error {
 		return result.Error
 	}
 
-	// Clear cache
-	r.Cache.Del("users")
-
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, user.ID)
+	return r.Cache.Set(key, user, 0).Err()
 }
 
 func (r *UserRepository) Update(user *database.User, id uint64) error {
@@ -81,9 +104,8 @@ func (r *UserRepository) Update(user *database.User, id uint64) error {
 		return result.Error
 	}
 
-	r.Cache.Del("users")
-
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	return r.Cache.Del(key).Err()
 }
 
 func (r *UserRepository) Delete(id uint64) error {
@@ -92,7 +114,6 @@ func (r *UserRepository) Delete(id uint64) error {
 		return result.Error
 	}
 
-	r.Cache.Del("users")
-
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	return r.Cache.Del(key).Err()
 }

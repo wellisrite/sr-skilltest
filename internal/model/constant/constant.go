@@ -1,5 +1,7 @@
 package constant
 
+import "time"
+
 const (
 	MODE_PRODUCTION = "production"
 )
@@ -13,4 +15,8 @@ const (
 
 const (
 	ERR_EXPIRED_PRODUCT = "customer trying to buy expired product"
+)
+
+const (
+	PAGINATION_CACHE_EXP_TIME = time.Second * 5
 )

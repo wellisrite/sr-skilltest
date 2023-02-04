@@ -14,6 +14,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const CLASS = "orderHistories"
+
 type OrderHistoriesRepository struct {
 	DB    *gorm.DB
 	Cache *redis.Client
@@ -25,12 +27,28 @@ func NewOrderHistoriesRepository(db *gorm.DB, cache *redis.Client) orderHistorie
 
 func (r *OrderHistoriesRepository) GetByID(id uint64) (*database.OrderHistories, error) {
 	var orderHistories database.OrderHistories
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	val, err := r.Cache.Get(key).Bytes()
+	if err == nil {
+		if err := json.Unmarshal(val, &orderHistories); err == nil {
+			return &orderHistories, nil
+		}
+	}
+
 	result := r.DB.First(&orderHistories, id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
 		return nil, result.Error
+	}
+
+	val, err = json.Marshal(orderHistories)
+	if err != nil {
+		return nil, err
+	}
+	if err := r.Cache.Set(key, val, 0).Err(); err != nil {
+		return nil, err
 	}
 
 	return &orderHistories, nil
@@ -40,13 +58,15 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	var orderHistories []database.OrderHistories
 	var totalCount int64
 
-	cachedOrderHistories, err := r.Cache.Get("orderHistories").Result()
+	cacheKey := fmt.Sprintf("orderHistories:%d:%d", offset, limit)
+	cachedOrderHistories, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
 		if err := json.Unmarshal([]byte(cachedOrderHistories), &orderHistories); err != nil {
 			return nil, totalCount, err
 		}
 		return orderHistories, totalCount, nil
 	}
+
 	result := r.DB.Preload("User").Preload("OrderItem").Limit(limit).Offset(offset).Find(&orderHistories)
 	if result.Error != nil {
 		return nil, 0, result.Error
@@ -59,7 +79,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	if err != nil {
 		return nil, totalCount, err
 	}
-	r.Cache.Set("orderHistories", cached, 0)
+	r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME)
 
 	return orderHistories, totalCount, nil
 }
@@ -104,11 +124,12 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *databa
 			tx.Rollback()
 			return err
 		}
+
+		r.Cache.Del(fmt.Sprintf("user:%d", orderHistories.UserID))
 	}
 
-	// Clear cache
-	r.Cache.Del("orderHistories")
-	r.Cache.Del("users")
+	key := fmt.Sprintf("%s:%d", CLASS, orderHistories.ID)
+	r.Cache.Set(key, orderHistories, 0)
 
 	return tx.Commit().Error
 }
@@ -119,9 +140,8 @@ func (r *OrderHistoriesRepository) Update(orderHistories *database.OrderHistorie
 		return result.Error
 	}
 
-	r.Cache.Del("orderHistories")
-
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	return r.Cache.Del(key).Err()
 }
 
 func (r *OrderHistoriesRepository) Delete(id uint64) error {
@@ -130,7 +150,6 @@ func (r *OrderHistoriesRepository) Delete(id uint64) error {
 		return result.Error
 	}
 
-	r.Cache.Del("orderHistories")
-
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, id)
+	return r.Cache.Del(key).Err()
 }
