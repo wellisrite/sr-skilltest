@@ -8,6 +8,8 @@ import (
 	"sr-skilltest/internal/domain/constant"
 	"strconv"
 
+	"gorm.io/gorm/clause"
+
 	"github.com/go-redis/redis"
 
 	"gorm.io/gorm"
@@ -120,13 +122,23 @@ func (r *UserRepository) Create(user *domain.User) error {
 }
 
 func (r *UserRepository) Update(user *domain.User, id uint64) error {
-	result := r.DB.Where("id = ?", id).Updates(user)
+	result := r.DB.
+		Model(user).
+		Clauses(clause.Returning{}).
+		Where("id = ?", id).
+		Updates(user)
+
 	if result.Error != nil {
 		return result.Error
 	}
 
-	key := fmt.Sprintf("%s:%d", CLASS, id)
-	return r.Cache.Del(key).Err()
+	key := fmt.Sprintf("%s:%d", CLASS, user.ID)
+	val, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
 func (r *UserRepository) Delete(id uint64) error {

@@ -167,13 +167,29 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 }
 
 func (r *OrderHistoriesRepository) Update(orderHistories *domain.OrderHistories, id uint64) error {
-	result := r.DB.Where("id = ?", id).Updates(orderHistories)
+	result := r.DB.
+		Where("id = ?", id).
+		Updates(orderHistories)
 	if result.Error != nil {
 		return result.Error
 	}
 
-	key := fmt.Sprintf("%s:%d", CLASS, id)
-	return r.Cache.Del(key).Err()
+	result = r.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).Preload("OrderItem", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).First(&orderHistories, id)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	key := fmt.Sprintf("%s:%d", CLASS, orderHistories.ID)
+	val, err := json.Marshal(orderHistories)
+	if err != nil {
+		return err
+	}
+
+	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
 func (r *OrderHistoriesRepository) Delete(id uint64) error {
