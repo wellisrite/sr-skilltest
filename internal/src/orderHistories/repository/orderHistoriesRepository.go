@@ -118,9 +118,8 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 		return err
 	}
 
-	// not allowing to buy expired product
 	if orderItem.ExpiredAt.Before(time.Now()) && !orderItem.ExpiredAt.IsZero() {
-		return fmt.Errorf(constant.ERR_EXPIRED_PRODUCT)
+	 cuslogger.Event(traceID, "Customer trying to buy expired product")
 	}
 
 	if err := tx.Create(orderHistories).Error; err != nil {
