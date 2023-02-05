@@ -35,7 +35,11 @@ func (r *OrderHistoriesRepository) GetByID(id uint64) (*database.OrderHistories,
 		}
 	}
 
-	result := r.DB.First(&orderHistories, id)
+	result := r.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).Preload("OrderItem", func(db *gorm.DB) *gorm.DB {
+		return db.Unscoped()
+	}).First(&orderHistories, id)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
@@ -47,7 +51,7 @@ func (r *OrderHistoriesRepository) GetByID(id uint64) (*database.OrderHistories,
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Cache.Set(key, val, 0).Err(); err != nil {
+	if err := r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, err
 	}
 

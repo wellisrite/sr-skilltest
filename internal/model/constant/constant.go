@@ -19,4 +19,5 @@ const (
 
 const (
 	PAGINATION_CACHE_EXP_TIME = time.Second * 5
+	ENTITY_CACHE_EXP_TIME     = time.Hour * 6
 )

@@ -47,7 +47,7 @@ func (r *UserRepository) GetByID(id uint64) (*database.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Cache.Set(key, val, 0).Err(); err != nil {
+	if err := r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, err
 	}
 

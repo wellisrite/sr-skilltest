@@ -36,7 +36,7 @@ func (u *UserUsecase) Detail(traceID string, c echo.Context, id uint64) error {
 	}
 
 	cuslogger.Event(time.Now().String(), traceID, " done processing\n")
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, u.mapper.ToResponseGetByID(user))
 }
 
 func (u *UserUsecase) ListUsers(traceID string, c echo.Context) error {

@@ -38,7 +38,7 @@ func (u *OrderHistoriesUsecase) Detail(traceID string, c echo.Context, id uint64
 	}
 
 	cuslogger.Event("done", "processing request")
-	return c.JSON(http.StatusOK, orderHistories)
+	return c.JSON(http.StatusOK, u.mapper.ToResponseGetByID(orderHistories))
 }
 
 func (u *OrderHistoriesUsecase) List(traceID string, c echo.Context) error {

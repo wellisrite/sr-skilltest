@@ -36,6 +36,18 @@ func (m *OrderItemsMapper) ToResponseListPagination(orderItems *[]database.Order
 	}
 }
 
+func (m *OrderItemsMapper) ToResponseGetByID(orderItem *database.OrderItems) *dto.ResponseGetOrderItems {
+	return &dto.ResponseGetOrderItems{
+		ID:        orderItem.ID,
+		CreatedAt: orderItem.CreatedAt,
+		DeletedAt: orderItem.DeletedAt.Time,
+		UpdatedAt: orderItem.UpdatedAt,
+		Name:      orderItem.Name,
+		Price:     orderItem.Price,
+		ExpiredAt: orderItem.ExpiredAt,
+	}
+}
+
 func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderItems) (orderItems *database.OrderItems) {
 	date, _ := time.Parse(constant.YYYY_MM_DD, payload.ExpiryDate)
 

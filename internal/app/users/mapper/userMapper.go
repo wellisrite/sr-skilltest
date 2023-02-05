@@ -33,6 +33,17 @@ func (m *UserMapper) ToResponseListPagination(users *[]database.User, page int, 
 	}
 }
 
+func (m *UserMapper) ToResponseGetByID(user *database.User) *dto.ResponseGetUser {
+	return &dto.ResponseGetUser{
+		ID:         user.ID,
+		CreatedAt:  user.CreatedAt,
+		DeletedAt:  user.DeletedAt.Time,
+		UpdatedAt:  user.UpdatedAt,
+		FirstOrder: user.FirstOrder,
+		FullName:   user.FullName,
+	}
+}
+
 func (m *UserMapper) ToCreateUser(payload *dto.RequestCreateUser) (user *database.User) {
 	return &database.User{
 		FullName: payload.Name,
