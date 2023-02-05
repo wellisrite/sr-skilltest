@@ -63,29 +63,18 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]domain.Order
 	var orderHistories []domain.OrderHistories
 	var totalCount int64
 
-	cacheKey := fmt.Sprintf("orderHistories:%d:%d", offset, limit)
-	cachedOrderHistories, err := r.Cache.Get(cacheKey).Result()
+	temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
+	if err != nil && err == redis.Nil {
+		r.DB.Model(&domain.OrderHistories{}).Count(&totalCount)
+	} else if err != nil {
+		return nil, totalCount, err
+	}
+
 	if err == nil {
-		var noCache bool
-		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
-		if err != nil && err == redis.Nil {
-			r.DB.Model(&domain.OrderHistories{}).Count(&totalCount)
-			noCache = true
-		} else if err != nil {
+		totalCount, err = strconv.ParseInt(temp, 10, 64)
+		if err != nil {
 			return nil, totalCount, err
 		}
-
-		if !noCache {
-			totalCount, err = strconv.ParseInt(temp, 10, 64)
-			if err != nil {
-				return nil, totalCount, err
-			}
-		}
-
-		if err := json.Unmarshal([]byte(cachedOrderHistories), &orderHistories); err != nil {
-			return nil, totalCount, err
-		}
-		return orderHistories, totalCount, nil
 	}
 
 	result := r.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
@@ -99,14 +88,6 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]domain.Order
 
 	r.DB.Model(&domain.OrderHistories{}).Count(&totalCount)
 
-	// Save data to cache
-	cached, err := json.Marshal(orderHistories)
-	if err != nil {
-		return nil, totalCount, err
-	}
-	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
-		return nil, totalCount, err
-	}
 	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, totalCount, err
 	}

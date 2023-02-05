@@ -60,32 +60,18 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItem
 	var orderItems []domain.OrderItems
 	var totalCount int64
 
-	// Try to get data from cache
-	cacheKey := fmt.Sprintf("orderItems:%d:%d", offset, limit)
+	temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
+	if err != nil && err == redis.Nil {
+		r.DB.Model(&domain.OrderItems{}).Count(&totalCount)
+	} else if err != nil {
+		return nil, totalCount, err
+	}
 
-	cachedOrderItems, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		var noCache bool
-		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
-		if err != nil && err == redis.Nil {
-			r.DB.Model(&domain.OrderItems{}).Count(&totalCount)
-			noCache = true
-		} else if err != nil {
+		totalCount, err = strconv.ParseInt(temp, 10, 64)
+		if err != nil {
 			return nil, totalCount, err
 		}
-
-		if !noCache {
-			totalCount, err = strconv.ParseInt(temp, 10, 64)
-			if err != nil {
-				return nil, totalCount, err
-			}
-		}
-
-		if err := json.Unmarshal([]byte(cachedOrderItems), &orderItems); err != nil {
-			return nil, totalCount, err
-		}
-
-		return orderItems, totalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&orderItems)
@@ -95,15 +81,6 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItem
 
 	r.DB.Model(&domain.OrderItems{}).Count(&totalCount)
 
-	// Save data to cache
-	cached, err := json.Marshal(orderItems)
-	if err != nil {
-		return nil, totalCount, err
-	}
-
-	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
-		return nil, totalCount, err
-	}
 	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, totalCount, err
 	}

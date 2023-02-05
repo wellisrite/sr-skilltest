@@ -62,47 +62,23 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]domain.User, int64, er
 	var totalCount int64
 	var users []domain.User
 
-	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
-	cachedUsers, err := r.Cache.Get(cacheKey).Result()
+	temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
+	if err != nil && err == redis.Nil {
+		r.DB.Model(&domain.User{}).Count(&totalCount)
+	} else if err != nil {
+		return nil, totalCount, err
+	}
+
 	if err == nil {
-		var noCache bool
-		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
-		if err != nil && err == redis.Nil {
-			r.DB.Model(&domain.User{}).Count(&totalCount)
-			noCache = true
-		} else if err != nil {
+		totalCount, err = strconv.ParseInt(temp, 10, 64)
+		if err != nil {
 			return nil, totalCount, err
 		}
-
-		if !noCache {
-			totalCount, err = strconv.ParseInt(temp, 10, 64)
-			if err != nil {
-				return nil, totalCount, err
-			}
-		}
-
-		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
-			return nil, totalCount, err
-		}
-
-		return users, totalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&users)
 	if result.Error != nil {
 		return nil, 0, result.Error
-	}
-
-	r.DB.Model(&domain.User{}).Count(&totalCount)
-
-	// Save data to cache
-	cached, err := json.Marshal(users)
-	if err != nil {
-		return nil, totalCount, err
-	}
-
-	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
-		return users, totalCount, err
 	}
 
 	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
