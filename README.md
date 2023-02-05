@@ -27,13 +27,13 @@ go mod vendor
 
 ```
 APP_PORT=8080
-SQL_HOST=host.docker.internal
+SQL_HOST=host.docker.internal // docker
 SQL_PORT=5432
 SQL_DATABASE=
 SQL_USER=
 SQL_PASSWORD=
 
-REDIS_HOST=redis // local
+REDIS_HOST=redis // docker
 REDIS_PORT=6379
 REDIS_PASSWORD=
 ```
