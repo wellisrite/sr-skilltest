@@ -110,7 +110,13 @@ func (r *UserRepository) Create(user *domain.User) error {
 		return result.Error
 	}
 
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, user.ID)
+	val, err := json.Marshal(user)
+	if err != nil {
+		return err
+	}
+
+	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
 func (r *UserRepository) Update(user *domain.User, id uint64) error {

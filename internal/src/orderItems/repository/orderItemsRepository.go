@@ -109,7 +109,13 @@ func (r *OrderItemsRepository) Create(orderItems *domain.OrderItems) error {
 		return result.Error
 	}
 
-	return nil
+	key := fmt.Sprintf("%s:%d", CLASS, orderItems.ID)
+	val, err := json.Marshal(orderItems)
+	if err != nil {
+		return err
+	}
+
+	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
 func (r *OrderItemsRepository) Update(orderItems *domain.OrderItems, id uint64) error {

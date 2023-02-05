@@ -152,7 +152,18 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 		r.Cache.Del(fmt.Sprintf("user:%d", orderHistories.UserID))
 	}
 
-	return tx.Commit().Error
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	key := fmt.Sprintf("%s:%d", CLASS, orderHistories.ID)
+	val, err := json.Marshal(orderHistories)
+	if err != nil {
+		return err
+	}
+
+	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
 func (r *OrderHistoriesRepository) Update(orderHistories *domain.OrderHistories, id uint64) error {
