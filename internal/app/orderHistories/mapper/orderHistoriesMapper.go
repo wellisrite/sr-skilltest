@@ -106,7 +106,7 @@ func (m *OrderHistoriesMapper) ToResponseGetByID(orderHistories *domain.OrderHis
 }
 
 func (m *OrderHistoriesMapper) ToCreateOrderHistories(payload *dto.RequestCreateOrderHistories) (orderHistories *domain.OrderHistories) {
-	return &database.OrderHistories{
+	return &domain.OrderHistories{
 		UserID:       uint(payload.UserID),
 		OrderItemID:  uint(payload.OrderItemID),
 		Descriptions: payload.Descriptions,
@@ -114,7 +114,7 @@ func (m *OrderHistoriesMapper) ToCreateOrderHistories(payload *dto.RequestCreate
 }
 
 func (m *OrderHistoriesMapper) ToUpdateOrderHistories(payload *dto.RequestUpdateOrderHistories) (orderHistories *domain.OrderHistories) {
-	return &database.OrderHistories{
+	return &domain.OrderHistories{
 		UserID:       uint(payload.UserID),
 		OrderItemID:  uint(payload.OrderItemID),
 		Descriptions: payload.Descriptions,

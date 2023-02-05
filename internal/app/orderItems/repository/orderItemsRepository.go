@@ -25,7 +25,7 @@ func NewOrderItemsRepository(db *gorm.DB, cache *redis.Client) orderItems.OrderI
 }
 
 func (r *OrderItemsRepository) GetByID(id uint64) (*domain.OrderItems, error) {
-	var orderItems database.OrderItems
+	var orderItems domain.OrderItems
 	// Try to get data from cache
 	key := fmt.Sprintf("%s:%d", CLASS, id)
 	val, err := r.Cache.Get(key).Bytes()
@@ -54,8 +54,8 @@ func (r *OrderItemsRepository) GetByID(id uint64) (*domain.OrderItems, error) {
 	return &orderItems, nil
 }
 
-func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderItems, int64, error) {
-	var orderItems []database.OrderItems
+func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItems, int64, error) {
+	var orderItems []domain.OrderItems
 	var totalCount int64
 
 	// Try to get data from cache
@@ -86,7 +86,7 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 		return nil, 0, result.Error
 	}
 
-	r.DB.Model(&database.OrderItems{}).Count(&totalCount)
+	r.DB.Model(&domain.OrderItems{}).Count(&totalCount)
 
 	// Save data to cache
 	cached, err := json.Marshal(orderItems)
@@ -124,7 +124,7 @@ func (r *OrderItemsRepository) Update(orderItems *domain.OrderItems, id uint64) 
 }
 
 func (r *OrderItemsRepository) Delete(id uint64) error {
-	result := r.DB.Where("id = ?", id).Delete(&database.OrderItems{})
+	result := r.DB.Where("id = ?", id).Delete(&domain.OrderItems{})
 	if result.Error != nil {
 		return result.Error
 	}

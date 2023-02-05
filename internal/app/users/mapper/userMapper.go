@@ -45,13 +45,13 @@ func (m *UserMapper) ToResponseGetByID(user *domain.User) *dto.ResponseGetUser {
 }
 
 func (m *UserMapper) ToCreateUser(payload *dto.RequestCreateUser) (user *domain.User) {
-	return &database.User{
+	return &domain.User{
 		FullName: payload.Name,
 	}
 }
 
 func (m *UserMapper) ToUpdateUser(payload *dto.RequestUpdateUser) (user *domain.User) {
-	return &database.User{
+	return &domain.User{
 		FullName:   payload.Name,
 		FirstOrder: payload.FirstOrder,
 	}

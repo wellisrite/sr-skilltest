@@ -27,7 +27,7 @@ func NewOrderHistoriesRepository(db *gorm.DB, cache *redis.Client) orderHistorie
 }
 
 func (r *OrderHistoriesRepository) GetByID(id uint64) (*domain.OrderHistories, error) {
-	var orderHistories database.OrderHistories
+	var orderHistories domain.OrderHistories
 	key := fmt.Sprintf("%s:%d", CLASS, id)
 	val, err := r.Cache.Get(key).Bytes()
 	if err == nil {
@@ -59,8 +59,8 @@ func (r *OrderHistoriesRepository) GetByID(id uint64) (*domain.OrderHistories, e
 	return &orderHistories, nil
 }
 
-func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.OrderHistories, int64, error) {
-	var orderHistories []database.OrderHistories
+func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]domain.OrderHistories, int64, error) {
+	var orderHistories []domain.OrderHistories
 	var totalCount int64
 
 	cacheKey := fmt.Sprintf("orderHistories:%d:%d", offset, limit)
@@ -93,7 +93,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 		return nil, 0, result.Error
 	}
 
-	r.DB.Model(&database.OrderHistories{}).Count(&totalCount)
+	r.DB.Model(&domain.OrderHistories{}).Count(&totalCount)
 
 	// Save data to cache
 	cached, err := json.Marshal(orderHistories)
@@ -121,13 +121,13 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 		return err
 	}
 
-	var user database.User
+	var user domain.User
 	if err := tx.First(&user, orderHistories.UserID).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	var orderItem database.OrderItems
+	var orderItem domain.OrderItems
 	if err := tx.First(&orderItem, orderHistories.OrderItemID).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -167,7 +167,7 @@ func (r *OrderHistoriesRepository) Update(orderHistories *domain.OrderHistories,
 }
 
 func (r *OrderHistoriesRepository) Delete(id uint64) error {
-	result := r.DB.Where("id = ?", id).Delete(&database.OrderHistories{})
+	result := r.DB.Where("id = ?", id).Delete(&domain.OrderHistories{})
 	if result.Error != nil {
 		return result.Error
 	}

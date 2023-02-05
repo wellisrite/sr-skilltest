@@ -27,7 +27,7 @@ func NewUserRepository(db *gorm.DB, cache *redis.Client) users.UserRepository {
 
 func (r *UserRepository) GetByID(id uint64) (*domain.User, error) {
 	// Try to get data from cache
-	var user database.User
+	var user domain.User
 	key := fmt.Sprintf("%s:%d", CLASS, id)
 	val, err := r.Cache.Get(key).Bytes()
 	if err == nil {
@@ -55,10 +55,10 @@ func (r *UserRepository) GetByID(id uint64) (*domain.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, error) {
+func (r *UserRepository) GetAll(offset int, limit int) ([]domain.User, int64, error) {
 	// Try to get data from cache
 	var totalCount int64
-	var users []database.User
+	var users []domain.User
 
 	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
 	cacheTotalCountKey := fmt.Sprintf("users:%d:%d:total", offset, limit)
@@ -86,7 +86,7 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 		return nil, 0, result.Error
 	}
 
-	r.DB.Model(&database.User{}).Count(&totalCount)
+	r.DB.Model(&domain.User{}).Count(&totalCount)
 
 	// Save data to cache
 	cached, err := json.Marshal(users)
@@ -125,7 +125,7 @@ func (r *UserRepository) Update(user *domain.User, id uint64) error {
 }
 
 func (r *UserRepository) Delete(id uint64) error {
-	result := r.DB.Where("id = ?", id).Delete(&database.User{})
+	result := r.DB.Where("id = ?", id).Delete(&domain.User{})
 	if result.Error != nil {
 		return result.Error
 	}

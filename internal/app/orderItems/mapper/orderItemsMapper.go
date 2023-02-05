@@ -51,7 +51,7 @@ func (m *OrderItemsMapper) ToResponseGetByID(orderItem *domain.OrderItems) *dto.
 func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderItems) (orderItems *domain.OrderItems) {
 	date, _ := time.Parse(constant.YYYY_MM_DD, payload.ExpiryDate)
 
-	return &database.OrderItems{
+	return &domain.OrderItems{
 		Name:      payload.Name,
 		Price:     payload.Price,
 		ExpiredAt: date,
@@ -61,7 +61,7 @@ func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderIte
 func (m *OrderItemsMapper) ToUpdateOrderItems(payload *dto.RequestUpdateOrderItems) (orderItems *domain.OrderItems) {
 	date, _ := time.Parse(constant.YYYY_MM_DD, payload.ExpiryDate)
 
-	return &database.OrderItems{
+	return &domain.OrderItems{
 		Name:      payload.Name,
 		Price:     payload.Price,
 		ExpiredAt: date,
