@@ -52,7 +52,7 @@ func (r *OrderHistoriesRepository) GetByID(id uint64) (*database.OrderHistories,
 	if err != nil {
 		return nil, err
 	}
-	if err := r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
+	if err := r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME_1).Err(); err != nil {
 		return nil, err
 	}
 
