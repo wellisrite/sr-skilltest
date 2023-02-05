@@ -86,10 +86,6 @@ func (u *OrderHistoriesUsecase) Create(traceID string, c echo.Context) error {
 	err := u.repo.Create(traceID, orderHistories)
 	if err != nil && err.Error() == gorm.ErrRecordNotFound.Error() {
 		return echo.NewHTTPError(http.StatusNotFound, map[string]string{"error": "entity not found"})
-	} else if err != nil && err.Error() == constant.ERR_EXPIRED_PRODUCT {
-		cuslogger.Event(traceID, "Customer trying to buy expired product")
-
-		return echo.NewHTTPError(http.StatusNotFound, map[string]string{"error": "product is expired"})
 	} else if err != nil {
 		cuslogger.Error("create_order", err, err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, map[string]string{"error": "Failed to create orderHistories"})
