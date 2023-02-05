@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sr-skilltest/internal/app/orderItems"
-	"sr-skilltest/internal/model/constant"
-	"sr-skilltest/internal/model/database"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/constant"
 	"strconv"
 
 	"github.com/go-redis/redis"
@@ -24,7 +24,7 @@ func NewOrderItemsRepository(db *gorm.DB, cache *redis.Client) orderItems.OrderI
 	return &OrderItemsRepository{DB: db, Cache: cache}
 }
 
-func (r *OrderItemsRepository) GetByID(id uint64) (*database.OrderItems, error) {
+func (r *OrderItemsRepository) GetByID(id uint64) (*domain.OrderItems, error) {
 	var orderItems database.OrderItems
 	// Try to get data from cache
 	key := fmt.Sprintf("%s:%d", CLASS, id)
@@ -104,7 +104,7 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 	return orderItems, totalCount, nil
 }
 
-func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
+func (r *OrderItemsRepository) Create(orderItems *domain.OrderItems) error {
 	result := r.DB.Create(orderItems)
 	if result.Error != nil {
 		return result.Error
@@ -113,7 +113,7 @@ func (r *OrderItemsRepository) Create(orderItems *database.OrderItems) error {
 	return nil
 }
 
-func (r *OrderItemsRepository) Update(orderItems *database.OrderItems, id uint64) error {
+func (r *OrderItemsRepository) Update(orderItems *domain.OrderItems, id uint64) error {
 	result := r.DB.Where("id = ?", id).Updates(orderItems)
 	if result.Error != nil {
 		return result.Error

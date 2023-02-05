@@ -2,8 +2,8 @@ package mapper
 
 import (
 	"sr-skilltest/internal/app/users"
-	"sr-skilltest/internal/model/database"
-	"sr-skilltest/internal/model/dto"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/dto"
 )
 
 type UserMapper struct{}
@@ -12,7 +12,7 @@ func NewUserMapper() users.UserMapper {
 	return &UserMapper{}
 }
 
-func (m *UserMapper) ToResponseListPagination(users *[]database.User, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
+func (m *UserMapper) ToResponseListPagination(users *[]domain.User, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
 	var response []*dto.ResponseGetUser
 	for _, user := range *users {
 		response = append(response, &dto.ResponseGetUser{
@@ -33,7 +33,7 @@ func (m *UserMapper) ToResponseListPagination(users *[]database.User, page int, 
 	}
 }
 
-func (m *UserMapper) ToResponseGetByID(user *database.User) *dto.ResponseGetUser {
+func (m *UserMapper) ToResponseGetByID(user *domain.User) *dto.ResponseGetUser {
 	return &dto.ResponseGetUser{
 		ID:         user.ID,
 		CreatedAt:  user.CreatedAt,
@@ -44,13 +44,13 @@ func (m *UserMapper) ToResponseGetByID(user *database.User) *dto.ResponseGetUser
 	}
 }
 
-func (m *UserMapper) ToCreateUser(payload *dto.RequestCreateUser) (user *database.User) {
+func (m *UserMapper) ToCreateUser(payload *dto.RequestCreateUser) (user *domain.User) {
 	return &database.User{
 		FullName: payload.Name,
 	}
 }
 
-func (m *UserMapper) ToUpdateUser(payload *dto.RequestUpdateUser) (user *database.User) {
+func (m *UserMapper) ToUpdateUser(payload *dto.RequestUpdateUser) (user *domain.User) {
 	return &database.User{
 		FullName:   payload.Name,
 		FirstOrder: payload.FirstOrder,

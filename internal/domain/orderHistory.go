@@ -1,4 +1,4 @@
-package database
+package domain
 
 import (
 	"gorm.io/gorm"

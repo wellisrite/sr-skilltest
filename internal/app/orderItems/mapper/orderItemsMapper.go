@@ -2,9 +2,9 @@ package mapper
 
 import (
 	"sr-skilltest/internal/app/orderItems"
-	"sr-skilltest/internal/model/constant"
-	"sr-skilltest/internal/model/database"
-	"sr-skilltest/internal/model/dto"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/constant"
+	"sr-skilltest/internal/domain/dto"
 	"time"
 )
 
@@ -14,7 +14,7 @@ func NewOrderItemsMapper() orderItems.OrderItemsMapper {
 	return &OrderItemsMapper{}
 }
 
-func (m *OrderItemsMapper) ToResponseListPagination(orderItems *[]database.OrderItems, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
+func (m *OrderItemsMapper) ToResponseListPagination(orderItems *[]domain.OrderItems, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
 	var response []*dto.ResponseGetOrderItems
 	for _, orderItem := range *orderItems {
 		response = append(response, &dto.ResponseGetOrderItems{
@@ -36,7 +36,7 @@ func (m *OrderItemsMapper) ToResponseListPagination(orderItems *[]database.Order
 	}
 }
 
-func (m *OrderItemsMapper) ToResponseGetByID(orderItem *database.OrderItems) *dto.ResponseGetOrderItems {
+func (m *OrderItemsMapper) ToResponseGetByID(orderItem *domain.OrderItems) *dto.ResponseGetOrderItems {
 	return &dto.ResponseGetOrderItems{
 		ID:        orderItem.ID,
 		CreatedAt: orderItem.CreatedAt,
@@ -48,7 +48,7 @@ func (m *OrderItemsMapper) ToResponseGetByID(orderItem *database.OrderItems) *dt
 	}
 }
 
-func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderItems) (orderItems *database.OrderItems) {
+func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderItems) (orderItems *domain.OrderItems) {
 	date, _ := time.Parse(constant.YYYY_MM_DD, payload.ExpiryDate)
 
 	return &database.OrderItems{
@@ -58,7 +58,7 @@ func (m *OrderItemsMapper) ToCreateOrderItems(payload *dto.RequestCreateOrderIte
 	}
 }
 
-func (m *OrderItemsMapper) ToUpdateOrderItems(payload *dto.RequestUpdateOrderItems) (orderItems *database.OrderItems) {
+func (m *OrderItemsMapper) ToUpdateOrderItems(payload *dto.RequestUpdateOrderItems) (orderItems *domain.OrderItems) {
 	date, _ := time.Parse(constant.YYYY_MM_DD, payload.ExpiryDate)
 
 	return &database.OrderItems{

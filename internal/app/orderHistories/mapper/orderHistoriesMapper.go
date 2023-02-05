@@ -2,8 +2,8 @@ package mapper
 
 import (
 	"sr-skilltest/internal/app/orderHistories"
-	"sr-skilltest/internal/model/database"
-	"sr-skilltest/internal/model/dto"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/dto"
 )
 
 type OrderHistoriesMapper struct{}
@@ -12,7 +12,7 @@ func NewOrderHistoriesMapper() orderHistories.OrderHistoriesMapper {
 	return &OrderHistoriesMapper{}
 }
 
-func (m *OrderHistoriesMapper) ToResponseListPagination(orderHistories *[]database.OrderHistories, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
+func (m *OrderHistoriesMapper) ToResponseListPagination(orderHistories *[]domain.OrderHistories, page int, pageLimit int, totalCount int) *dto.ResponsePagination {
 	var response []*dto.ResponseGetOrderHistories
 	for _, orderHistory := range *orderHistories {
 		orderItem := orderHistory.OrderItem
@@ -62,7 +62,7 @@ func (m *OrderHistoriesMapper) ToResponseListPagination(orderHistories *[]databa
 	}
 }
 
-func (m *OrderHistoriesMapper) ToResponseGetByID(orderHistories *database.OrderHistories) *dto.ResponseGetOrderHistories {
+func (m *OrderHistoriesMapper) ToResponseGetByID(orderHistories *domain.OrderHistories) *dto.ResponseGetOrderHistories {
 	var response *dto.ResponseGetOrderHistories
 	orderItem := orderHistories.OrderItem
 	user := orderHistories.User
@@ -105,7 +105,7 @@ func (m *OrderHistoriesMapper) ToResponseGetByID(orderHistories *database.OrderH
 	return response
 }
 
-func (m *OrderHistoriesMapper) ToCreateOrderHistories(payload *dto.RequestCreateOrderHistories) (orderHistories *database.OrderHistories) {
+func (m *OrderHistoriesMapper) ToCreateOrderHistories(payload *dto.RequestCreateOrderHistories) (orderHistories *domain.OrderHistories) {
 	return &database.OrderHistories{
 		UserID:       uint(payload.UserID),
 		OrderItemID:  uint(payload.OrderItemID),
@@ -113,7 +113,7 @@ func (m *OrderHistoriesMapper) ToCreateOrderHistories(payload *dto.RequestCreate
 	}
 }
 
-func (m *OrderHistoriesMapper) ToUpdateOrderHistories(payload *dto.RequestUpdateOrderHistories) (orderHistories *database.OrderHistories) {
+func (m *OrderHistoriesMapper) ToUpdateOrderHistories(payload *dto.RequestUpdateOrderHistories) (orderHistories *domain.OrderHistories) {
 	return &database.OrderHistories{
 		UserID:       uint(payload.UserID),
 		OrderItemID:  uint(payload.OrderItemID),

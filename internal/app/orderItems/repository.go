@@ -1,13 +1,14 @@
 package orderItems
 
 import (
-	"sr-skilltest/internal/model/database"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/database"
 )
 
 type OrderItemsRepository interface {
-	GetByID(id uint64) (*database.OrderItems, error)
+	GetByID(id uint64) (*domain.OrderItems, error)
 	GetAll(offset int, limit int) ([]database.OrderItems, int64, error)
-	Create(OrderItems *database.OrderItems) error
-	Update(OrderItems *database.OrderItems, id uint64) error
+	Create(OrderItems *domain.OrderItems) error
+	Update(OrderItems *domain.OrderItems, id uint64) error
 	Delete(id uint64) error
 }

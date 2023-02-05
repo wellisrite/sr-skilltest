@@ -3,7 +3,7 @@ package cuslogger
 import (
 	"fmt"
 	"os"
-	"sr-skilltest/internal/model/constant"
+	"sr-skilltest/internal/domain/constant"
 	"strings"
 
 	"github.com/pkg/errors"

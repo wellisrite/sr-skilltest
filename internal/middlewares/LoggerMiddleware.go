@@ -3,7 +3,7 @@ package middleware
 import (
 	"fmt"
 	"os"
-	"sr-skilltest/internal/model/constant"
+	"sr-skilltest/internal/domain/constant"
 	"time"
 
 	"github.com/labstack/echo"

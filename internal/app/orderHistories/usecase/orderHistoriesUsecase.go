@@ -3,9 +3,9 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/app/orderHistories"
+	"sr-skilltest/internal/domain/constant"
+	"sr-skilltest/internal/domain/dto"
 	"sr-skilltest/internal/infra/cuslogger"
-	"sr-skilltest/internal/model/constant"
-	"sr-skilltest/internal/model/dto"
 	"strconv"
 	"time"
 

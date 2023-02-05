@@ -3,8 +3,8 @@ package handler
 import (
 	"fmt"
 	"sr-skilltest/internal/app/orderHistories"
+	"sr-skilltest/internal/domain/constant"
 	middleware "sr-skilltest/internal/middlewares"
-	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/utilities"
 	"strconv"
 

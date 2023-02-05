@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"sr-skilltest/internal/app/orderHistories"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/constant"
 	"sr-skilltest/internal/infra/cuslogger"
-	"sr-skilltest/internal/model/constant"
-	"sr-skilltest/internal/model/database"
 	"strconv"
 	"time"
 
@@ -26,7 +26,7 @@ func NewOrderHistoriesRepository(db *gorm.DB, cache *redis.Client) orderHistorie
 	return &OrderHistoriesRepository{DB: db, Cache: cache}
 }
 
-func (r *OrderHistoriesRepository) GetByID(id uint64) (*database.OrderHistories, error) {
+func (r *OrderHistoriesRepository) GetByID(id uint64) (*domain.OrderHistories, error) {
 	var orderHistories database.OrderHistories
 	key := fmt.Sprintf("%s:%d", CLASS, id)
 	val, err := r.Cache.Get(key).Bytes()
@@ -109,7 +109,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	return orderHistories, totalCount, nil
 }
 
-func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *database.OrderHistories) error {
+func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain.OrderHistories) error {
 	tx := r.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -156,7 +156,7 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *databa
 	return tx.Commit().Error
 }
 
-func (r *OrderHistoriesRepository) Update(orderHistories *database.OrderHistories, id uint64) error {
+func (r *OrderHistoriesRepository) Update(orderHistories *domain.OrderHistories, id uint64) error {
 	result := r.DB.Where("id = ?", id).Updates(orderHistories)
 	if result.Error != nil {
 		return result.Error

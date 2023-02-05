@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sr-skilltest/internal/app/users"
-	"sr-skilltest/internal/model/constant"
-	"sr-skilltest/internal/model/database"
+	"sr-skilltest/internal/domain"
+	"sr-skilltest/internal/domain/constant"
 	"strconv"
 
 	"github.com/go-redis/redis"
@@ -25,7 +25,7 @@ func NewUserRepository(db *gorm.DB, cache *redis.Client) users.UserRepository {
 	return &UserRepository{DB: db, Cache: cache}
 }
 
-func (r *UserRepository) GetByID(id uint64) (*database.User, error) {
+func (r *UserRepository) GetByID(id uint64) (*domain.User, error) {
 	// Try to get data from cache
 	var user database.User
 	key := fmt.Sprintf("%s:%d", CLASS, id)
@@ -105,7 +105,7 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 	return users, totalCount, nil
 }
 
-func (r *UserRepository) Create(user *database.User) error {
+func (r *UserRepository) Create(user *domain.User) error {
 	result := r.DB.Create(user)
 	if result.Error != nil {
 		return result.Error
@@ -114,7 +114,7 @@ func (r *UserRepository) Create(user *database.User) error {
 	return nil
 }
 
-func (r *UserRepository) Update(user *database.User, id uint64) error {
+func (r *UserRepository) Update(user *domain.User, id uint64) error {
 	result := r.DB.Where("id = ?", id).Updates(user)
 	if result.Error != nil {
 		return result.Error

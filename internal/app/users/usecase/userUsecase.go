@@ -3,8 +3,8 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/app/users"
+	"sr-skilltest/internal/domain/dto"
 	"sr-skilltest/internal/infra/cuslogger"
-	"sr-skilltest/internal/model/dto"
 	"strconv"
 	"time"
 
