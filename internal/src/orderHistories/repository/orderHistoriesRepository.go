@@ -15,6 +15,7 @@ import (
 )
 
 const CLASS = "orderHistories"
+const CACHETOTALCOUNTKEY = "orderHistories:total"
 
 type OrderHistoriesRepository struct {
 	DB    *gorm.DB
@@ -63,11 +64,9 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]domain.Order
 	var totalCount int64
 
 	cacheKey := fmt.Sprintf("orderHistories:%d:%d", offset, limit)
-	cacheTotalCountKey := fmt.Sprintf("orderHistories:%d:%d:total", offset, limit)
-
 	cachedOrderHistories, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
 		if err != nil {
 			return nil, totalCount, err
 		}
@@ -102,7 +101,7 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]domain.Order
 	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, totalCount, err
 	}
 	return orderHistories, totalCount, nil
@@ -163,6 +162,10 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 		return err
 	}
 
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
+	}
+
 	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
@@ -189,6 +192,10 @@ func (r *OrderHistoriesRepository) Update(orderHistories *domain.OrderHistories,
 		return err
 	}
 
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
+	}
+
 	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
@@ -196,6 +203,10 @@ func (r *OrderHistoriesRepository) Delete(id uint64) error {
 	result := r.DB.Where("id = ?", id).Delete(&domain.OrderHistories{})
 	if result.Error != nil {
 		return result.Error
+	}
+
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
 	}
 
 	key := fmt.Sprintf("%s:%d", CLASS, id)

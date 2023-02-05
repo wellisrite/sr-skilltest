@@ -15,6 +15,7 @@ import (
 )
 
 const CLASS = "orderItems"
+const CACHETOTALCOUNTKEY = "orderItems:total"
 
 type OrderItemsRepository struct {
 	DB    *gorm.DB
@@ -61,11 +62,10 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItem
 
 	// Try to get data from cache
 	cacheKey := fmt.Sprintf("orderItems:%d:%d", offset, limit)
-	cacheTotalCountKey := fmt.Sprintf("orderItems:%d:%d:total", offset, limit)
 
 	cachedOrderItems, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
 		if err != nil {
 			return nil, totalCount, err
 		}
@@ -98,7 +98,7 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItem
 	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, totalCount, err
 	}
-	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return nil, totalCount, err
 	}
 
@@ -114,6 +114,10 @@ func (r *OrderItemsRepository) Create(orderItems *domain.OrderItems) error {
 	key := fmt.Sprintf("%s:%d", CLASS, orderItems.ID)
 	val, err := json.Marshal(orderItems)
 	if err != nil {
+		return err
+	}
+
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
 		return err
 	}
 
@@ -137,6 +141,10 @@ func (r *OrderItemsRepository) Update(orderItems *domain.OrderItems, id uint64) 
 		return err
 	}
 
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
+	}
+
 	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
@@ -144,6 +152,10 @@ func (r *OrderItemsRepository) Delete(id uint64) error {
 	result := r.DB.Where("id = ?", id).Delete(&domain.OrderItems{})
 	if result.Error != nil {
 		return result.Error
+	}
+
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
 	}
 
 	key := fmt.Sprintf("%s:%d", CLASS, id)

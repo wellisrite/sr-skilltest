@@ -16,6 +16,7 @@ import (
 )
 
 const CLASS = "user"
+const CACHETOTALCOUNTKEY = "user:total"
 
 type UserRepository struct {
 	DB    *gorm.DB
@@ -62,11 +63,9 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]domain.User, int64, er
 	var users []domain.User
 
 	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
-	cacheTotalCountKey := fmt.Sprintf("users:%d:%d:total", offset, limit)
-
 	cachedUsers, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
 		if err != nil {
 			return nil, totalCount, err
 		}
@@ -99,7 +98,7 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]domain.User, int64, er
 		return users, totalCount, err
 	}
 
-	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+	if err := r.Cache.Set(CACHETOTALCOUNTKEY, totalCount, constant.ENTITY_CACHE_EXP_TIME).Err(); err != nil {
 		return users, totalCount, err
 	}
 
@@ -115,6 +114,9 @@ func (r *UserRepository) Create(user *domain.User) error {
 	key := fmt.Sprintf("%s:%d", CLASS, user.ID)
 	val, err := json.Marshal(user)
 	if err != nil {
+		return err
+	}
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
 		return err
 	}
 
@@ -138,6 +140,10 @@ func (r *UserRepository) Update(user *domain.User, id uint64) error {
 		return err
 	}
 
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
+	}
+
 	return r.Cache.Set(key, val, constant.ENTITY_CACHE_EXP_TIME).Err()
 }
 
@@ -148,5 +154,10 @@ func (r *UserRepository) Delete(id uint64) error {
 	}
 
 	key := fmt.Sprintf("%s:%d", CLASS, id)
+
+	if err := r.Cache.Del(CACHETOTALCOUNTKEY).Err(); err != nil {
+		return err
+	}
+
 	return r.Cache.Del(key).Err()
 }
