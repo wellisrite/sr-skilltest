@@ -3,20 +3,20 @@ package main
 import (
 	"sr-skilltest/internal/infra/cuslogger"
 
-	_userHandler "sr-skilltest/internal/app/users/handler"
-	_userMapper "sr-skilltest/internal/app/users/mapper"
-	_userRepository "sr-skilltest/internal/app/users/repository"
-	_userUsecase "sr-skilltest/internal/app/users/usecase"
+	_userHandler "sr-skilltest/internal/src/users/handler"
+	_userMapper "sr-skilltest/internal/src/users/mapper"
+	_userRepository "sr-skilltest/internal/src/users/repository"
+	_userUsecase "sr-skilltest/internal/src/users/usecase"
 
-	_orderItemsHandler "sr-skilltest/internal/app/orderItems/handler"
-	_orderItemsMapper "sr-skilltest/internal/app/orderItems/mapper"
-	_orderItemsRepository "sr-skilltest/internal/app/orderItems/repository"
-	_orderItemsUsecase "sr-skilltest/internal/app/orderItems/usecase"
+	_orderItemsHandler "sr-skilltest/internal/src/orderItems/handler"
+	_orderItemsMapper "sr-skilltest/internal/src/orderItems/mapper"
+	_orderItemsRepository "sr-skilltest/internal/src/orderItems/repository"
+	_orderItemsUsecase "sr-skilltest/internal/src/orderItems/usecase"
 
-	_orderHistoriesHandler "sr-skilltest/internal/app/orderHistories/handler"
-	_orderHistoriesMapper "sr-skilltest/internal/app/orderHistories/mapper"
-	_orderHistoriesRepository "sr-skilltest/internal/app/orderHistories/repository"
-	_orderHistoriesUsecase "sr-skilltest/internal/app/orderHistories/usecase"
+	_orderHistoriesHandler "sr-skilltest/internal/src/orderHistories/handler"
+	_orderHistoriesMapper "sr-skilltest/internal/src/orderHistories/mapper"
+	_orderHistoriesRepository "sr-skilltest/internal/src/orderHistories/repository"
+	_orderHistoriesUsecase "sr-skilltest/internal/src/orderHistories/usecase"
 
 	"github.com/labstack/echo"
 )
