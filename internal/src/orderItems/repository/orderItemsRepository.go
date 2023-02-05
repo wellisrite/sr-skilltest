@@ -65,21 +65,27 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]domain.OrderItem
 
 	cachedOrderItems, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
+		var noCache bool
 		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
-		if err != nil {
+		if err != nil && err == redis.Nil {
+			r.DB.Model(&domain.OrderItems{}).Count(&totalCount)
+			noCache = true
+		} else if err != nil {
 			return nil, totalCount, err
 		}
 
-		cachedTotalCount, err := strconv.ParseInt(temp, 10, 64)
-		if err != nil {
-			return nil, totalCount, err
+		if !noCache {
+			totalCount, err = strconv.ParseInt(temp, 10, 64)
+			if err != nil {
+				return nil, totalCount, err
+			}
 		}
 
 		if err := json.Unmarshal([]byte(cachedOrderItems), &orderItems); err != nil {
-			return nil, cachedTotalCount, err
+			return nil, totalCount, err
 		}
 
-		return orderItems, cachedTotalCount, nil
+		return orderItems, totalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&orderItems)

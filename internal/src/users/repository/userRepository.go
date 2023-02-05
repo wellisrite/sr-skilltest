@@ -65,20 +65,27 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]domain.User, int64, er
 	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
 	cachedUsers, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
+		var noCache bool
 		temp, err := r.Cache.Get(CACHETOTALCOUNTKEY).Result()
-		if err != nil {
+		if err != nil && err == redis.Nil {
+			r.DB.Model(&domain.User{}).Count(&totalCount)
+			noCache = true
+		} else if err != nil {
 			return nil, totalCount, err
 		}
 
-		cachedTotalCount, err := strconv.ParseInt(temp, 10, 64)
-		if err != nil {
-			return nil, totalCount, err
+		if !noCache {
+			totalCount, err = strconv.ParseInt(temp, 10, 64)
+			if err != nil {
+				return nil, totalCount, err
+			}
 		}
 
 		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
-			return nil, cachedTotalCount, err
+			return nil, totalCount, err
 		}
-		return users, cachedTotalCount, nil
+
+		return users, totalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&users)
