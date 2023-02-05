@@ -3,17 +3,17 @@ package main
 import (
 	"sr-skilltest/internal/infra/cuslogger"
 
-	_userHandler "sr-skilltest/internal/src/users/handler"
+	_userHandler "sr-skilltest/internal/src/users/delivery/http"
 	_userMapper "sr-skilltest/internal/src/users/mapper"
 	_userRepository "sr-skilltest/internal/src/users/repository"
 	_userUsecase "sr-skilltest/internal/src/users/usecase"
 
-	_orderItemsHandler "sr-skilltest/internal/src/orderItems/handler"
+	_orderItemsHandler "sr-skilltest/internal/src/orderItems/delivery/http"
 	_orderItemsMapper "sr-skilltest/internal/src/orderItems/mapper"
 	_orderItemsRepository "sr-skilltest/internal/src/orderItems/repository"
 	_orderItemsUsecase "sr-skilltest/internal/src/orderItems/usecase"
 
-	_orderHistoriesHandler "sr-skilltest/internal/src/orderHistories/handler"
+	_orderHistoriesHandler "sr-skilltest/internal/src/orderHistories/delivery/http"
 	_orderHistoriesMapper "sr-skilltest/internal/src/orderHistories/mapper"
 	_orderHistoriesRepository "sr-skilltest/internal/src/orderHistories/repository"
 	_orderHistoriesUsecase "sr-skilltest/internal/src/orderHistories/usecase"
