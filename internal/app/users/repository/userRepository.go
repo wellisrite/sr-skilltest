@@ -7,6 +7,7 @@ import (
 	"sr-skilltest/internal/app/users"
 	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/database"
+	"strconv"
 
 	"github.com/go-redis/redis"
 
@@ -60,12 +61,24 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 	var users []database.User
 
 	cacheKey := fmt.Sprintf("users:%d:%d", offset, limit)
+	cacheTotalCountKey := fmt.Sprintf("users:%d:%d:total", offset, limit)
+
 	cachedUsers, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
+		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		if err != nil {
 			return nil, totalCount, err
 		}
-		return users, totalCount, nil
+
+		cachedTotalCount, err := strconv.ParseInt(temp, 10, 64)
+		if err != nil {
+			return nil, totalCount, err
+		}
+
+		if err := json.Unmarshal([]byte(cachedUsers), &users); err != nil {
+			return nil, cachedTotalCount, err
+		}
+		return users, cachedTotalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&users)
@@ -82,6 +95,10 @@ func (r *UserRepository) GetAll(offset int, limit int) ([]database.User, int64, 
 	}
 
 	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
+		return users, totalCount, err
+	}
+
+	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
 		return users, totalCount, err
 	}
 

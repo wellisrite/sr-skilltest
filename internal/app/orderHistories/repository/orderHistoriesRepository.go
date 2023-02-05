@@ -8,6 +8,7 @@ import (
 	"sr-skilltest/internal/infra/cuslogger"
 	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/database"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -63,12 +64,24 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	var totalCount int64
 
 	cacheKey := fmt.Sprintf("orderHistories:%d:%d", offset, limit)
+	cacheTotalCountKey := fmt.Sprintf("orderHistories:%d:%d:total", offset, limit)
+
 	cachedOrderHistories, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		if err := json.Unmarshal([]byte(cachedOrderHistories), &orderHistories); err != nil {
+		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		if err != nil {
 			return nil, totalCount, err
 		}
-		return orderHistories, totalCount, nil
+
+		cachedTotalCount, err := strconv.ParseInt(temp, 10, 64)
+		if err != nil {
+			return nil, totalCount, err
+		}
+
+		if err := json.Unmarshal([]byte(cachedOrderHistories), &orderHistories); err != nil {
+			return nil, cachedTotalCount, err
+		}
+		return orderHistories, cachedTotalCount, nil
 	}
 
 	result := r.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
@@ -87,8 +100,12 @@ func (r *OrderHistoriesRepository) GetAll(offset int, limit int) ([]database.Ord
 	if err != nil {
 		return nil, totalCount, err
 	}
-	r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs())
-
+	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs()).Err(); err != nil {
+		return nil, totalCount, err
+	}
+	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+		return nil, totalCount, err
+	}
 	return orderHistories, totalCount, nil
 }
 

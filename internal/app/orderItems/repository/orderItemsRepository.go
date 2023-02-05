@@ -7,6 +7,7 @@ import (
 	"sr-skilltest/internal/app/orderItems"
 	"sr-skilltest/internal/model/constant"
 	"sr-skilltest/internal/model/database"
+	"strconv"
 
 	"github.com/go-redis/redis"
 	"gorm.io/gorm"
@@ -59,12 +60,25 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 
 	// Try to get data from cache
 	cacheKey := fmt.Sprintf("orderItems:%d:%d", offset, limit)
+	cacheTotalCountKey := fmt.Sprintf("orderItems:%d:%d:total", offset, limit)
+
 	cachedOrderItems, err := r.Cache.Get(cacheKey).Result()
 	if err == nil {
-		if err := json.Unmarshal([]byte(cachedOrderItems), &orderItems); err != nil {
+		temp, err := r.Cache.Get(cacheTotalCountKey).Result()
+		if err != nil {
 			return nil, totalCount, err
 		}
-		return orderItems, totalCount, nil
+
+		cachedTotalCount, err := strconv.ParseInt(temp, 10, 64)
+		if err != nil {
+			return nil, totalCount, err
+		}
+
+		if err := json.Unmarshal([]byte(cachedOrderItems), &orderItems); err != nil {
+			return nil, cachedTotalCount, err
+		}
+
+		return orderItems, cachedTotalCount, nil
 	}
 
 	result := r.DB.Limit(limit).Offset(offset).Find(&orderItems)
@@ -79,7 +93,13 @@ func (r *OrderItemsRepository) GetAll(offset int, limit int) ([]database.OrderIt
 	if err != nil {
 		return nil, totalCount, err
 	}
-	r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME.Abs())
+
+	if err := r.Cache.Set(cacheKey, cached, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+		return nil, totalCount, err
+	}
+	if err := r.Cache.Set(cacheTotalCountKey, totalCount, constant.PAGINATION_CACHE_EXP_TIME).Err(); err != nil {
+		return nil, totalCount, err
+	}
 
 	return orderItems, totalCount, nil
 }
