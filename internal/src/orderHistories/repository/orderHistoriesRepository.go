@@ -119,7 +119,7 @@ func (r *OrderHistoriesRepository) Create(traceID string, orderHistories *domain
 	}
 
 	if orderItem.ExpiredAt.Before(time.Now()) && !orderItem.ExpiredAt.IsZero() {
-	 cuslogger.Event(traceID, "Customer trying to buy expired product")
+		cuslogger.Event(traceID, "Customer trying to buy expired product")
 	}
 
 	if err := tx.Create(orderHistories).Error; err != nil {
