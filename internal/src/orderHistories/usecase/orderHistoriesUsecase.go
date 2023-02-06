@@ -3,7 +3,6 @@ package usecases
 import (
 	"net/http"
 	"sr-skilltest/internal/domain"
-	"sr-skilltest/internal/domain/constant"
 	"sr-skilltest/internal/domain/dto"
 	"sr-skilltest/internal/infra/cuslogger"
 	"strconv"
